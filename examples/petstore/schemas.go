@@ -1,9 +1,8 @@
 package main
 
 type Pet struct {
-	ID   int64   `json:"id,omitempty"`
-	Name string  `json:"name,omitempty"`
-	Tag  *string `json:"tag,omitempty"`
+	ID int64 `json:"id,omitempty"`
+	NewPet
 }
 
 type NewPet struct {

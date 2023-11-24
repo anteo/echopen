@@ -22,12 +22,23 @@ type TestStructNested struct {
 	Nested TestStruct `json:"nested,omitempty"`
 }
 
+type TestStructNestedAnon struct {
+	Nested struct {
+		Test string `json:"test,omitempty"`
+	} `json:"nested,omitempty"`
+}
+
 type TestStructNestedPtr struct {
 	Nested *TestStruct `json:"nested,omitempty"`
 }
 
 type TestStructIface struct {
 	Iface interface{} `json:"iface,omitempty"`
+}
+
+type TestStructComposition struct {
+	Test2 string `json:"test2,omitempty"`
+	TestStruct
 }
 
 func TestReflect(t *testing.T) {
@@ -38,46 +49,25 @@ func TestReflect(t *testing.T) {
 	}
 
 	defs := []tcd{
-		{
-			Name:     "str",
-			Target:   "test_string",
-			Expected: `{"type":"string"}`,
-		},
-		{
-			Name:     "str_ptr",
-			Target:   ptrTo("test_string"),
-			Expected: `{"type":"string"}`,
-		},
-		{
-			Name:     "int",
-			Target:   42,
-			Expected: `{"type":"integer"}`,
-		},
-		{
-			Name:     "int_ptr",
-			Target:   ptrTo(42),
-			Expected: `{"type":"integer"}`,
-		},
-		{
-			Name:     "uint16",
-			Target:   uint16(42),
-			Expected: `{"format":"uint16","type":"integer"}`,
-		},
-		{
-			Name:     "map",
-			Target:   map[string]interface{}{},
-			Expected: `{"type":"object"}`,
-		},
-		{
-			Name:     "struct",
-			Target:   TestStruct{},
-			Expected: `{"$ref":"#/components/schemas/TestStruct"}`,
-		},
-		{
-			Name:     "struct_ptr",
-			Target:   &TestStruct{},
-			Expected: `{"$ref":"#/components/schemas/TestStruct"}`,
-		},
+		{"str", "test_string", `{"type":"string"}`},
+		{"str_ptr", ptrTo("test_string"), `{"type":"string"}`},
+		{"int", 42, `{"type":"integer"}`},
+		{"int_ptr", ptrTo(42), `{"type":"integer"}`},
+		{"uint8", uint8(42), `{"format":"char","type":"integer"}`},
+		{"uint16", uint16(42), `{"format":"uint16","type":"integer"}`},
+		{"uint32", uint32(42), `{"format":"uint32","type":"integer"}`},
+		{"uint64", uint64(42), `{"format":"uint64","type":"integer"}`},
+		{"int8", int8(42), `{"format":"int8","type":"integer"}`},
+		{"int16", int16(42), `{"format":"int16","type":"integer"}`},
+		{"int32", int32(42), `{"format":"int32","type":"integer"}`},
+		{"int64", int64(42), `{"format":"int64","type":"integer"}`},
+		{"float32", float32(42.0), `{"format":"float","type":"number"}`},
+		{"float64", float64(42.0), `{"format":"double","type":"number"}`},
+		{"bool", true, `{"type":"bool"}`},
+		{"map", map[string]interface{}{}, `{"type":"object"}`},
+		{"slice", []string{}, `{"items":{"type":"string"},"type":"array"}`},
+		{"struct", TestStruct{}, `{"$ref":"#/components/schemas/TestStruct"}`},
+		{"struct_ptr", &TestStruct{}, `{"$ref":"#/components/schemas/TestStruct"}`},
 	}
 
 	for _, tc := range defs {
@@ -114,6 +104,11 @@ func TestReflectStruct(t *testing.T) {
 			Expected: `{"properties":{"nested":{"$ref":"#/components/schemas/TestStruct"}},"required":["nested"],"type":"object"}`,
 		},
 		{
+			Name:     "nested_anon",
+			Target:   TestStructNestedAnon{},
+			Expected: `{"properties":{"nested":{"properties":{"test":{"type":"string"}},"required":["test"],"type":"object"}},"required":["nested"],"type":"object"}`,
+		},
+		{
 			Name:     "nested_ptr",
 			Target:   TestStructNestedPtr{},
 			Expected: `{"properties":{"nested":{"$ref":"#/components/schemas/TestStruct"}},"type":"object"}`,
@@ -122,6 +117,11 @@ func TestReflectStruct(t *testing.T) {
 			Name:     "iface",
 			Target:   TestStructIface{},
 			Expected: `{"properties":{"iface":{"type":"object"}},"type":"object"}`,
+		},
+		{
+			Name:     "composition",
+			Target:   TestStructComposition{},
+			Expected: `{"allOf":[{"$ref":"#/components/schemas/TestStruct"},{"properties":{"test2":{"type":"string"}},"required":["test2"],"type":"object"}]}`,
 		},
 	}
 
