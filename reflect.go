@@ -64,14 +64,14 @@ func (w *APIWrapper) TypeToSchema(typ reflect.Type) *openapi3.Schema {
 		return &openapi3.Schema{Type: "number", Format: "double"}
 	case reflect.Map, reflect.Interface:
 		return &openapi3.Schema{Type: "object"}
-	case reflect.Array:
-		return &openapi3.Schema{Type: "array", Items: w.TypeToSchemaRef(typ)}
+	case reflect.Array, reflect.Slice:
+		return &openapi3.Schema{Type: "array", Items: w.TypeToSchemaRef(typ.Elem())}
 	case reflect.Struct:
 		return w.StructTypeToSchema(typ)
 	case reflect.Pointer:
 		return w.TypeToSchema(typ.Elem())
 	default:
-		panic(fmt.Sprintf("echopen: type %s not supported", typ))
+		panic(fmt.Sprintf("echopen: type %s kind %d not supported", typ, typ.Kind()))
 	}
 }
 

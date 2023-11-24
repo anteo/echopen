@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/getkin/kin-openapi/openapi3"
@@ -32,7 +33,7 @@ func main() {
 		"/hello",
 		hello,
 		echopen.WithTags("hello_world"),
-		echopen.WithResponseBody(http.StatusOK, "Default response", ""),
+		echopen.WithResponseBody(fmt.Sprint(http.StatusOK), "Default response", ""),
 	)
 
 	// Serve the generated schema

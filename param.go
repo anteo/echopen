@@ -70,6 +70,9 @@ func WithQueryStruct(target interface{}) RouteConfigFunc {
 				In:          "query",
 				Required:    f.Type.Kind() != reflect.Ptr,
 				Description: f.Tag.Get("description"),
+				Schema: &openapi3.SchemaRef{
+					Value: rw.API.TypeToSchema(f.Type),
+				},
 			})
 		}
 

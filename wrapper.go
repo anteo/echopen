@@ -73,6 +73,14 @@ func (w *APIWrapper) Licence(lic *openapi3.License) {
 	w.Schema.Info.License = lic
 }
 
+func (w *APIWrapper) TermsOfService(url string) {
+	w.Schema.Info.TermsOfService = url
+}
+
+func (w *APIWrapper) Contact(c *openapi3.Contact) {
+	w.Schema.Info.Contact = c
+}
+
 func (w *APIWrapper) Add(method string, path string, handler echo.HandlerFunc, config ...RouteConfigFunc) *RouteWrapper {
 	// Construct a new operation for this path and method
 	op := &openapi3.Operation{
@@ -82,14 +90,35 @@ func (w *APIWrapper) Add(method string, path string, handler echo.HandlerFunc, c
 	// Convert echo format to OpenAPI path
 	oapiPath := echoRouteToOpenAPI(path)
 
-	// Find or create the path item for this entry
+	// Get the PathItem for this route
 	pathItem := w.Schema.Paths.Find(oapiPath)
-	if pathItem != nil {
+	if pathItem == nil {
+		pathItem = &openapi3.PathItem{}
+		w.Schema.Paths[oapiPath] = pathItem
+	}
+
+	// Find or create the path item for this entry
+	switch strings.ToLower(method) {
+	case "connect":
+		pathItem.Connect = op
+	case "delete":
+		pathItem.Delete = op
+	case "get":
 		pathItem.Get = op
-	} else {
-		w.Schema.Paths[oapiPath] = &openapi3.PathItem{
-			Get: op,
-		}
+	case "head":
+		pathItem.Head = op
+	case "options":
+		pathItem.Options = op
+	case "patch":
+		pathItem.Patch = op
+	case "post":
+		pathItem.Post = op
+	case "put":
+		pathItem.Put = op
+	case "trace":
+		pathItem.Trace = op
+	default:
+		panic(fmt.Sprintf("echopen: unknown method %s", method))
 	}
 
 	// Start populating return wrapper
@@ -171,4 +200,8 @@ func (w *APIWrapper) TRACE(path string, handler echo.HandlerFunc, config ...Rout
 
 func (w *APIWrapper) AddTag(tag *openapi3.Tag) {
 	w.Schema.Tags = append(w.Schema.Tags, tag)
+}
+
+func (w *APIWrapper) AddServer(svr *openapi3.Server) {
+	w.Schema.AddServer(svr)
 }

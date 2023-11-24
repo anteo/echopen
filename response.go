@@ -1,24 +1,25 @@
 package echopen
 
 import (
-	"fmt"
 	"reflect"
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/labstack/echo/v4"
 )
 
-func WithResponse(code int, description string) RouteConfigFunc {
+func WithResponse(code string, description string) RouteConfigFunc {
 	return func(rw *RouteWrapper) *RouteWrapper {
-		rw.Operation.AddResponse(code, &openapi3.Response{
-			Description: &description,
-		})
+		rw.Operation.Responses[code] = &openapi3.ResponseRef{
+			Value: &openapi3.Response{
+				Description: &description,
+			},
+		}
 
 		return rw
 	}
 }
 
-func WithResponseBody(code int, description string, target interface{}) RouteConfigFunc {
+func WithResponseBody(code string, description string, target interface{}) RouteConfigFunc {
 	t := reflect.TypeOf(target)
 	mime := echo.MIMEApplicationJSON
 
@@ -28,7 +29,7 @@ func WithResponseBody(code int, description string, target interface{}) RouteCon
 	}
 
 	return func(rw *RouteWrapper) *RouteWrapper {
-		rw.Operation.Responses[fmt.Sprint(code)] = &openapi3.ResponseRef{
+		rw.Operation.Responses[code] = &openapi3.ResponseRef{
 			Value: &openapi3.Response{
 				Description: &description,
 				Content: map[string]*openapi3.MediaType{

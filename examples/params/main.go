@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -51,9 +52,9 @@ func main() {
 			Description: "ID Parameter",
 		}),
 		echopen.WithQueryStruct(QueryParams{}),
-		echopen.WithResponseBody(http.StatusOK, "Default response", ValidResponseBody{}),
-		echopen.WithResponseBody(http.StatusBadRequest, "Bad request", ErrorResponseBody{}),
-		echopen.WithResponseBody(http.StatusNotFound, "Not found", ErrorResponseBody{}),
+		echopen.WithResponseBody(fmt.Sprint(http.StatusOK), "Default response", ValidResponseBody{}),
+		echopen.WithResponseBody(fmt.Sprint(http.StatusBadRequest), "Bad request", ErrorResponseBody{}),
+		echopen.WithResponseBody(fmt.Sprint(http.StatusNotFound), "Not found", ErrorResponseBody{}),
 	)
 
 	// Serve the generated schema

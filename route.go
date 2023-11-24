@@ -2,6 +2,7 @@ package echopen
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/labstack/echo/v4"
@@ -42,6 +43,13 @@ func WithTags(tags ...string) RouteConfigFunc {
 func WithOperationID(id string) RouteConfigFunc {
 	return func(rw *RouteWrapper) *RouteWrapper {
 		rw.Operation.OperationID = id
+		return rw
+	}
+}
+
+func WithDescription(desc string) RouteConfigFunc {
+	return func(rw *RouteWrapper) *RouteWrapper {
+		rw.Operation.Description = strings.TrimSpace((desc))
 		return rw
 	}
 }
