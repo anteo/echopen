@@ -78,6 +78,7 @@ Sed tempus felis lobortis leo pulvinar rutrum. Nam mattis velit nisl, eu condime
 
 	// Serve the generated schema
 	api.ServeSchema("/openapi.yml")
+	api.ServeUI("/", "/openapi.yml", "5.10.3")
 
 	// Start the server
 	api.Start("localhost:3030")

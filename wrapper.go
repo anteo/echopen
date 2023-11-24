@@ -55,6 +55,44 @@ func (w *APIWrapper) ServeSchema(path string) *echo.Route {
 	return w.Engine.GET(path, handler)
 }
 
+func (w *APIWrapper) ServeUI(path string, schemaPath string, uiVersion string) *echo.Route {
+	return w.Engine.GET(path, func(c echo.Context) error {
+		return c.HTML(http.StatusOK, fmt.Sprintf(`
+			<!DOCTYPE html>
+			<html lang="en">
+				<head>
+					<meta charset="UTF-8">
+					<title>%[1]s</title>
+					<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/%[3]s/swagger-ui.min.css" />
+				</head>
+
+				<body>
+					<div id="swagger-ui"></div>
+					<script src="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/%[3]s/swagger-ui-bundle.min.js" charset="UTF-8"> </script>
+					<script src="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/%[3]s/swagger-ui-standalone-preset.min.js" charset="UTF-8"> </script>
+					<script>
+						window.onload = function() {
+							window.ui = SwaggerUIBundle({
+								url: "%[2]s",
+								dom_id: '#swagger-ui',
+								deepLinking: true,
+								presets: [
+									SwaggerUIBundle.presets.apis,
+									SwaggerUIStandalonePreset
+								],
+								plugins: [
+									SwaggerUIBundle.plugins.DownloadUrl
+								],
+								layout: "StandaloneLayout"
+							});
+						};
+					</script>
+				</body>
+			</html>
+		`, w.Schema.Info.Title, schemaPath, uiVersion))
+	})
+}
+
 func (w *APIWrapper) Start(addr string) error {
 
 	err := w.Schema.Validate(context.TODO())
