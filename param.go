@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/getkin/kin-openapi/openapi3"
+	oa3 "github.com/getkin/kin-openapi/openapi3"
 	"github.com/labstack/echo/v4"
 )
 
@@ -27,7 +27,7 @@ func WithPathParameter(param *PathParameter) RouteConfigFunc {
 			}
 		})
 
-		rw.Operation.AddParameter(&openapi3.Parameter{
+		rw.Operation.AddParameter(&oa3.Parameter{
 			Name:        param.Name,
 			In:          "path",
 			Description: param.Description,
@@ -65,12 +65,12 @@ func WithQueryStruct(target interface{}) RouteConfigFunc {
 		for i := 0; i < t.NumField(); i++ {
 			f := t.Field(i)
 			tag := f.Tag.Get("query")
-			rw.Operation.AddParameter(&openapi3.Parameter{
+			rw.Operation.AddParameter(&oa3.Parameter{
 				Name:        tag,
 				In:          "query",
 				Required:    f.Type.Kind() != reflect.Ptr,
 				Description: f.Tag.Get("description"),
-				Schema: &openapi3.SchemaRef{
+				Schema: &oa3.SchemaRef{
 					Value: rw.API.TypeToSchema(f.Type),
 				},
 			})

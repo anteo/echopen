@@ -4,24 +4,25 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/getkin/kin-openapi/openapi3"
+	oa3 "github.com/getkin/kin-openapi/openapi3"
 	"github.com/labstack/echo/v4"
 )
 
 type GroupWrapper struct {
-	API         *APIWrapper
-	Prefix      string
-	Middlewares []echo.MiddlewareFunc
-	Tags        []string
-	Group       *echo.Group
+	API                  *APIWrapper
+	Prefix               string
+	Middlewares          []echo.MiddlewareFunc
+	Tags                 []string
+	SecurityRequirements oa3.SecurityRequirements
+	Group                *echo.Group
 }
 
 type GroupConfigFunc func(*GroupWrapper) *GroupWrapper
 
 func (g *GroupWrapper) Add(method string, path string, handler echo.HandlerFunc, config ...RouteConfigFunc) *RouteWrapper {
 	// Construct a new operation for this path and method
-	op := &openapi3.Operation{
-		Responses: map[string]*openapi3.ResponseRef{},
+	op := &oa3.Operation{
+		Responses: map[string]*oa3.ResponseRef{},
 	}
 
 	// Get full path from group
@@ -33,7 +34,7 @@ func (g *GroupWrapper) Add(method string, path string, handler echo.HandlerFunc,
 	// Get the PathItem for this route
 	pathItem := g.API.Schema.Paths.Find(oapiPath)
 	if pathItem == nil {
-		pathItem = &openapi3.PathItem{}
+		pathItem = &oa3.PathItem{}
 		g.API.Schema.Paths[oapiPath] = pathItem
 	}
 
@@ -72,6 +73,10 @@ func (g *GroupWrapper) Add(method string, path string, handler echo.HandlerFunc,
 
 	// Add group tags
 	wrapper = WithTags(g.Tags...)(wrapper)
+
+	for _, req := range g.SecurityRequirements {
+		wrapper = WithSecurityRequirement(req)(wrapper)
+	}
 
 	// Apply config transforms
 	for _, configFunc := range config {
@@ -136,6 +141,13 @@ func WithEchoGroupMiddlewares(m ...echo.MiddlewareFunc) GroupConfigFunc {
 func WithGroupTags(tags ...string) GroupConfigFunc {
 	return func(gw *GroupWrapper) *GroupWrapper {
 		gw.Tags = append(gw.Tags, tags...)
+		return gw
+	}
+}
+
+func WithGroupSecurityRequirement(req oa3.SecurityRequirement) GroupConfigFunc {
+	return func(gw *GroupWrapper) *GroupWrapper {
+		gw.SecurityRequirements = append(gw.SecurityRequirements, req)
 		return gw
 	}
 }

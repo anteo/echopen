@@ -6,13 +6,13 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/getkin/kin-openapi/openapi3"
+	oa3 "github.com/getkin/kin-openapi/openapi3"
 	"github.com/labstack/echo/v4"
 	"gopkg.in/yaml.v3"
 )
 
 type APIWrapper struct {
-	Schema *openapi3.T
+	Schema *oa3.T
 	Engine *echo.Echo
 }
 
@@ -20,16 +20,13 @@ type WrapperConfigFunc func(*APIWrapper) *APIWrapper
 
 func New(title string, apiVersion string, schemaVersion string, config ...WrapperConfigFunc) *APIWrapper {
 	wrapper := &APIWrapper{
-		Schema: &openapi3.T{
+		Schema: &oa3.T{
 			OpenAPI: schemaVersion,
-			Info: &openapi3.Info{
+			Info: &oa3.Info{
 				Title:   title,
 				Version: apiVersion,
 			},
-			Paths: openapi3.Paths{},
-			Components: &openapi3.Components{
-				Schemas: openapi3.Schemas{},
-			},
+			Paths: oa3.Paths{},
 		},
 		Engine: echo.New(),
 	}
@@ -107,7 +104,7 @@ func (w *APIWrapper) Description(desc string) {
 	w.Schema.Info.Description = strings.TrimSpace(desc)
 }
 
-func (w *APIWrapper) Licence(lic *openapi3.License) {
+func (w *APIWrapper) Licence(lic *oa3.License) {
 	w.Schema.Info.License = lic
 }
 
@@ -115,14 +112,14 @@ func (w *APIWrapper) TermsOfService(url string) {
 	w.Schema.Info.TermsOfService = url
 }
 
-func (w *APIWrapper) Contact(c *openapi3.Contact) {
+func (w *APIWrapper) Contact(c *oa3.Contact) {
 	w.Schema.Info.Contact = c
 }
 
 func (w *APIWrapper) Add(method string, path string, handler echo.HandlerFunc, config ...RouteConfigFunc) *RouteWrapper {
 	// Construct a new operation for this path and method
-	op := &openapi3.Operation{
-		Responses: map[string]*openapi3.ResponseRef{},
+	op := &oa3.Operation{
+		Responses: map[string]*oa3.ResponseRef{},
 	}
 
 	// Convert echo format to OpenAPI path
@@ -131,7 +128,7 @@ func (w *APIWrapper) Add(method string, path string, handler echo.HandlerFunc, c
 	// Get the PathItem for this route
 	pathItem := w.Schema.Paths.Find(oapiPath)
 	if pathItem == nil {
-		pathItem = &openapi3.PathItem{}
+		pathItem = &oa3.PathItem{}
 		w.Schema.Paths[oapiPath] = pathItem
 	}
 
@@ -236,10 +233,33 @@ func (w *APIWrapper) TRACE(path string, handler echo.HandlerFunc, config ...Rout
 	return w.Add("TRACE", path, handler, config...)
 }
 
-func (w *APIWrapper) AddTag(tag *openapi3.Tag) {
+func (w *APIWrapper) GetComponents() *oa3.Components {
+	if w.Schema.Components == nil {
+		w.Schema.Components = &oa3.Components{}
+	}
+	return w.Schema.Components
+}
+
+func (w *APIWrapper) GetSchemaComponents() oa3.Schemas {
+	if w.GetComponents().Schemas == nil {
+		w.GetComponents().Schemas = oa3.Schemas{}
+	}
+	return w.GetComponents().Schemas
+}
+
+func (w *APIWrapper) AddTag(tag *oa3.Tag) {
 	w.Schema.Tags = append(w.Schema.Tags, tag)
 }
 
-func (w *APIWrapper) AddServer(svr *openapi3.Server) {
+func (w *APIWrapper) AddServer(svr *oa3.Server) {
 	w.Schema.AddServer(svr)
+}
+
+func (w *APIWrapper) AddSecurityScheme(name string, r *oa3.SecurityScheme) {
+	if w.Schema.Components.SecuritySchemes == nil {
+		w.Schema.Components.SecuritySchemes = map[string]*oa3.SecuritySchemeRef{}
+	}
+	w.Schema.Components.SecuritySchemes[name] = &oa3.SecuritySchemeRef{
+		Value: r,
+	}
 }

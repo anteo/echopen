@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/getkin/kin-openapi/openapi3"
+	oa3 "github.com/getkin/kin-openapi/openapi3"
 	"github.com/labstack/echo/v4"
 )
 
@@ -33,10 +33,10 @@ func WithRequestBody(description string, target interface{}) RouteConfigFunc {
 			}
 		})
 
-		rw.Operation.RequestBody = &openapi3.RequestBodyRef{
-			Value: &openapi3.RequestBody{
+		rw.Operation.RequestBody = &oa3.RequestBodyRef{
+			Value: &oa3.RequestBody{
 				Description: description,
-				Content: map[string]*openapi3.MediaType{
+				Content: map[string]*oa3.MediaType{
 					echo.MIMEApplicationJSON: {Schema: rw.API.ToSchemaRef(target)},
 				},
 			},
