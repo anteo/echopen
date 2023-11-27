@@ -3,6 +3,7 @@ package echopen
 import (
 	"fmt"
 	"reflect"
+	"strconv"
 	"strings"
 
 	oa3 "github.com/getkin/kin-openapi/openapi3"
@@ -111,11 +112,47 @@ func (w *APIWrapper) StructTypeToSchema(target reflect.Type) *oa3.Schema {
 	for i := 0; i < target.NumField(); i++ {
 		f := target.Field(i)
 
+		// Get SchemaRef for the contained field
+		ref := w.TypeToSchemaRef(f.Type)
+
 		// Get the name from the json tag (does assume only JSON is used)
 		name := strings.Split(f.Tag.Get("json"), ",")[0]
 
-		// Get SchemaRef for the contained field
-		ref := w.TypeToSchemaRef(f.Type)
+		// Extract validation rules
+		validation := strings.Split(f.Tag.Get("validate"), ",")
+		for _, val := range validation {
+			if strings.HasPrefix(val, "max=") || strings.HasPrefix(val, "lte=") {
+				max, _ := strconv.ParseInt(strings.Split(val, "=")[1], 10, 64)
+				switch ref.Value.Type {
+				case "string":
+					ref.Value.MaxLength = PtrTo(uint64(max))
+				case "number", "integer":
+					ref.Value.Max = PtrTo(float64(max))
+				}
+			} else if strings.HasPrefix(val, "min=") || strings.HasPrefix(val, "gte=") {
+				min, _ := strconv.ParseInt(strings.Split(val, "=")[1], 10, 64)
+				switch ref.Value.Type {
+				case "string":
+					ref.Value.MinLength = uint64(min)
+				case "number", "integer":
+					ref.Value.Min = PtrTo(float64(min))
+				}
+			} else if strings.HasPrefix(val, "gt=") {
+				min, _ := strconv.ParseInt(strings.Split(val, "=")[1], 10, 64)
+				switch ref.Value.Type {
+				case "number", "integer":
+					ref.Value.Min = PtrTo(float64(min))
+					ref.Value.ExclusiveMin = true
+				}
+			} else if strings.HasPrefix(val, "lt=") {
+				max, _ := strconv.ParseInt(strings.Split(val, "=")[1], 10, 64)
+				switch ref.Value.Type {
+				case "number", "integer":
+					ref.Value.Max = PtrTo(float64(max))
+					ref.Value.ExclusiveMax = true
+				}
+			}
+		}
 
 		if f.Anonymous {
 			// Anonymous members of a struct imply composition

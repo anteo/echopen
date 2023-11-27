@@ -27,3 +27,5 @@ func genOpID(method string, path string) string {
 func echoRouteToOpenAPI(path string) string {
 	return reParam.ReplaceAllString(path, "{$1}")
 }
+
+func PtrTo[T any](v T) *T { return &v }

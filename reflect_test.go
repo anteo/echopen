@@ -8,8 +8,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func ptrTo[T any](v T) *T { return &v }
-
 type TestStruct struct {
 	Test string `json:"test,omitempty"`
 }
@@ -41,6 +39,11 @@ type TestStructComposition struct {
 	TestStruct
 }
 
+type TestStructValidation struct {
+	StringLen *string `json:"string_len,omitempty" validate:"max=10,min=1"`
+	NumRange  *int    `json:"num_range,omitempty" validate:"lt=10,gt=1"`
+}
+
 func TestReflect(t *testing.T) {
 	type tcd struct {
 		Name     string
@@ -50,9 +53,9 @@ func TestReflect(t *testing.T) {
 
 	defs := []tcd{
 		{"str", "test_string", `{"type":"string"}`},
-		{"str_ptr", ptrTo("test_string"), `{"type":"string"}`},
+		{"str_ptr", PtrTo("test_string"), `{"type":"string"}`},
 		{"int", 42, `{"type":"integer"}`},
-		{"int_ptr", ptrTo(42), `{"type":"integer"}`},
+		{"int_ptr", PtrTo(42), `{"type":"integer"}`},
 		{"uint8", uint8(42), `{"format":"char","type":"integer"}`},
 		{"uint16", uint16(42), `{"format":"uint16","type":"integer"}`},
 		{"uint32", uint32(42), `{"format":"uint32","type":"integer"}`},
@@ -122,6 +125,11 @@ func TestReflectStruct(t *testing.T) {
 			Name:     "composition",
 			Target:   TestStructComposition{},
 			Expected: `{"allOf":[{"$ref":"#/components/schemas/TestStruct"},{"properties":{"test2":{"type":"string"}},"required":["test2"],"type":"object"}]}`,
+		},
+		{
+			Name:     "validation",
+			Target:   TestStructValidation{},
+			Expected: `{"properties":{"num_range":{"exclusiveMaximum":true,"exclusiveMinimum":true,"maximum":10,"minimum":1,"type":"integer"},"string_len":{"maxLength":10,"minLength":1,"type":"string"}},"type":"object"}`,
 		},
 	}
 
