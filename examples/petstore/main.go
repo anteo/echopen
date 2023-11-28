@@ -14,15 +14,15 @@ func main() {
 	api := echopen.New(
 		"Swagger Petstore",
 		"1.0.0",
-		echopen.WithSchemaDescription("A sample API that uses a petstore as an example to demonstrate features in the OpenAPI 3.0 specification"),
-		echopen.WithSchemaLicense(&v310.License{Name: "Apache 2.0", URL: "https://www.apache.org/licenses/LICENSE"}),
-		echopen.WithSchemaTermsOfService("http://swagger.io/terms/"),
-		echopen.WithSchemaContact(&v310.Contact{
+		echopen.WithSpecDescription("A sample API that uses a petstore as an example to demonstrate features in the OpenAPI 3.0 specification"),
+		echopen.WithSpecLicense(&v310.License{Name: "Apache 2.0", URL: "https://www.apache.org/licenses/LICENSE"}),
+		echopen.WithSpecTermsOfService("http://swagger.io/terms/"),
+		echopen.WithSpecContact(&v310.Contact{
 			Name:  "Swagger API Team",
 			Email: "apiteam@swagger.io",
 			URL:   "http://swagger.io",
 		}),
-		echopen.WithSchemaServer(&v310.Server{URL: "https://petstore.swagger.io/v2"}),
+		echopen.WithSpecServer(&v310.Server{URL: "https://petstore.swagger.io/v2"}),
 	)
 
 	api.GET(
@@ -85,7 +85,7 @@ Sed tempus felis lobortis leo pulvinar rutrum. Nam mattis velit nisl, eu condime
 	)
 
 	// Serve the generated schema
-	api.ServeYAMLSchema("/openapi.yml")
+	api.ServeYAMLSpec("/openapi.yml")
 	api.ServeUI("/", "/openapi.yml", "5.10.3")
 
 	// Start the server

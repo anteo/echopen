@@ -39,9 +39,9 @@ func main() {
 	api := echopen.New(
 		"Parameters",
 		"1.0.0",
-		echopen.WithSchemaDescription(Description),
-		echopen.WithSchemaLicense(&v310.License{Name: "MIT", URL: "https://example.com/license"}),
-		echopen.WithSchemaTag(&v310.Tag{Name: "params", Description: "Params API Routes"}),
+		echopen.WithSpecDescription(Description),
+		echopen.WithSpecLicense(&v310.License{Name: "MIT", URL: "https://example.com/license"}),
+		echopen.WithSpecTag(&v310.Tag{Name: "params", Description: "Params API Routes"}),
 	)
 
 	// Params route
@@ -57,7 +57,7 @@ func main() {
 	)
 
 	// Serve the generated schema
-	api.ServeYAMLSchema("/openapi.yml")
+	api.ServeYAMLSpec("/openapi.yml")
 	api.ServeUI("/", "/openapi.yml", "5.10.3")
 
 	// Start the server

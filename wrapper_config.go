@@ -11,42 +11,42 @@ import (
 
 type WrapperConfigFunc func(*APIWrapper) *APIWrapper
 
-func WithSchemaDescription(desc string) WrapperConfigFunc {
+func WithSpecDescription(desc string) WrapperConfigFunc {
 	return func(a *APIWrapper) *APIWrapper {
 		a.Schema.Info.Description = strings.TrimSpace(desc)
 		return a
 	}
 }
 
-func WithSchemaTermsOfService(tos string) WrapperConfigFunc {
+func WithSpecTermsOfService(tos string) WrapperConfigFunc {
 	return func(a *APIWrapper) *APIWrapper {
 		a.Schema.Info.TermsOfService = tos
 		return a
 	}
 }
 
-func WithSchemaLicense(l *v310.License) WrapperConfigFunc {
+func WithSpecLicense(l *v310.License) WrapperConfigFunc {
 	return func(a *APIWrapper) *APIWrapper {
 		a.Schema.Info.License = l
 		return a
 	}
 }
 
-func WithSchemaTag(t *v310.Tag) WrapperConfigFunc {
+func WithSpecTag(t *v310.Tag) WrapperConfigFunc {
 	return func(a *APIWrapper) *APIWrapper {
 		a.Schema.AddTag(t)
 		return a
 	}
 }
 
-func WithSchemaContact(c *v310.Contact) WrapperConfigFunc {
+func WithSpecContact(c *v310.Contact) WrapperConfigFunc {
 	return func(a *APIWrapper) *APIWrapper {
 		a.Schema.Info.Contact = c
 		return a
 	}
 }
 
-func WithSchemaServer(s *v310.Server) WrapperConfigFunc {
+func WithSpecServer(s *v310.Server) WrapperConfigFunc {
 	return func(a *APIWrapper) *APIWrapper {
 		a.Schema.AddServer(s)
 		return a

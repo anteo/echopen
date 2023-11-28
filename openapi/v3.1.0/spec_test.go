@@ -6,8 +6,8 @@ import (
 	"testing"
 )
 
-func TestNewDocument(t *testing.T) {
-	d := NewDocument()
+func TestNewSpec(t *testing.T) {
+	d := NewSpecification()
 
 	buf, _ := json.Marshal(d)
 

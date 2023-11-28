@@ -15,10 +15,10 @@ func TestXxx(t *testing.T) {
 	api := echopen.New(
 		"Basic Example",
 		"1.0.0",
-		echopen.WithSchemaDescription("Basic Example API Server."),
-		echopen.WithSchemaLicense(&v310.License{Name: "MIT", URL: "https://example.com/license"}),
-		echopen.WithSchemaTag(&v310.Tag{Name: "hello_world", Description: "Hello World API Routes"}),
-		echopen.WithSchemaTag(&v310.Tag{Name: "param", Description: "Routes with params"}),
+		echopen.WithSpecDescription("Basic Example API Server."),
+		echopen.WithSpecLicense(&v310.License{Name: "MIT", URL: "https://example.com/license"}),
+		echopen.WithSpecTag(&v310.Tag{Name: "hello_world", Description: "Hello World API Routes"}),
+		echopen.WithSpecTag(&v310.Tag{Name: "param", Description: "Routes with params"}),
 	)
 
 	// Add a group
@@ -34,8 +34,8 @@ func TestXxx(t *testing.T) {
 	helloGroup.PATCH("/body/settings", helloQuery, echopen.WithRequestBody("Body params", RequestBodySettings{}))
 
 	// Serve the generated schema
-	api.ServeJSONSchema("/openapi.json")
-	api.ServeYAMLSchema("/openapi.yml")
+	api.ServeJSONSpec("/openapi.json")
+	api.ServeYAMLSpec("/openapi.yml")
 }
 
 type QueryParams struct {

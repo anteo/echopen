@@ -13,13 +13,13 @@ import (
 )
 
 type APIWrapper struct {
-	Schema *v310.Document
+	Schema *v310.Specification
 	Engine *echo.Echo
 }
 
 func New(title string, apiVersion string, config ...WrapperConfigFunc) *APIWrapper {
 	wrapper := &APIWrapper{
-		Schema: v310.NewDocument(),
+		Schema: v310.NewSpecification(),
 		Engine: echo.New(),
 	}
 
@@ -34,8 +34,17 @@ func New(title string, apiVersion string, config ...WrapperConfigFunc) *APIWrapp
 	return wrapper
 }
 
-func (w *APIWrapper) ServeYAMLSchema(path string) *echo.Route {
-	buf, err := yaml.Marshal(w.Schema)
+func (w *APIWrapper) ServeYAMLSpec(path string, filters ...SpecFilterFunc) *echo.Route {
+	s := w.Schema
+
+	if len(filters) > 0 {
+		s = w.Schema.Copy()
+		for _, f := range filters {
+			s = f(s)
+		}
+	}
+
+	buf, err := yaml.Marshal(s)
 
 	var handler echo.HandlerFunc = func(c echo.Context) error {
 		if err != nil {
@@ -48,8 +57,17 @@ func (w *APIWrapper) ServeYAMLSchema(path string) *echo.Route {
 	return w.Engine.GET(path, handler)
 }
 
-func (w *APIWrapper) ServeJSONSchema(path string) *echo.Route {
-	buf, err := json.Marshal(w.Schema)
+func (w *APIWrapper) ServeJSONSpec(path string, filters ...SpecFilterFunc) *echo.Route {
+	s := w.Schema
+
+	if len(filters) > 0 {
+		s = w.Schema.Copy()
+		for _, f := range filters {
+			s = f(s)
+		}
+	}
+
+	buf, err := json.Marshal(s)
 
 	var handler echo.HandlerFunc = func(c echo.Context) error {
 		if err != nil {

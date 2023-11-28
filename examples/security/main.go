@@ -18,8 +18,8 @@ func main() {
 	api := echopen.New(
 		"Hello World",
 		"1.0.0",
-		echopen.WithSchemaDescription("Demonstration of routes with security requirements"),
-		echopen.WithSchemaLicense(&v310.License{Name: "MIT", URL: "https://example.com/license"}),
+		echopen.WithSpecDescription("Demonstration of routes with security requirements"),
+		echopen.WithSpecLicense(&v310.License{Name: "MIT", URL: "https://example.com/license"}),
 	)
 
 	api.Schema.GetComponents().AddJSONResponse("ErrorResponse", "Error response", api.ToSchemaRef(ErrorResponseBody{}))
@@ -50,7 +50,7 @@ func main() {
 	)
 
 	// Serve the generated schema
-	api.ServeYAMLSchema("/openapi.yml")
+	api.ServeYAMLSpec("/openapi.yml")
 	api.ServeUI("/", "/openapi.yml", "5.10.3")
 
 	// Start the server

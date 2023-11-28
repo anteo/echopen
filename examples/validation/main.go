@@ -32,8 +32,8 @@ func main() {
 	api := echopen.New(
 		"Validation",
 		"1.0.0",
-		echopen.WithSchemaDescription(Description),
-		echopen.WithSchemaLicense(&v310.License{Name: "MIT", URL: "https://example.com/license"}),
+		echopen.WithSpecDescription(Description),
+		echopen.WithSpecLicense(&v310.License{Name: "MIT", URL: "https://example.com/license"}),
 	)
 
 	// Add a global error handler to catch validation errors
@@ -49,7 +49,7 @@ func main() {
 	)
 
 	// Serve the generated schema
-	api.ServeYAMLSchema("/openapi.yml")
+	api.ServeYAMLSpec("/openapi.yml")
 	api.ServeUI("/", "/openapi.yml", "5.10.3")
 
 	// Start the server

@@ -13,8 +13,8 @@ func main() {
 	api := echopen.New(
 		"Responses",
 		"1.0.0",
-		echopen.WithSchemaDescription("Example to show reused responses, loosely based on the Petstore examples."),
-		echopen.WithSchemaTag(&v310.Tag{Name: "pets", Description: "Pets endpoints"}),
+		echopen.WithSpecDescription("Example to show reused responses, loosely based on the Petstore examples."),
+		echopen.WithSpecTag(&v310.Tag{Name: "pets", Description: "Pets endpoints"}),
 	)
 
 	api.Schema.GetComponents().AddJSONResponse("UnexpectedErrorResponse", "unexpected error", api.ToSchemaRef(Error{}))
@@ -82,7 +82,7 @@ func main() {
 	)
 
 	// Serve the generated schema
-	api.ServeYAMLSchema("/openapi.yml")
+	api.ServeYAMLSpec("/openapi.yml")
 	api.ServeUI("/", "/openapi.yml", "5.10.3")
 
 	// Start the server

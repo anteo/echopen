@@ -1,7 +1,12 @@
 package v310
 
+import (
+	"bytes"
+	"encoding/gob"
+)
+
 // https://spec.openapis.org/oas/v3.1.0#openapi-object
-type Document struct {
+type Specification struct {
 	OpenAPI           string                    `json:"openapi" yaml:"openapi"`
 	JSONSchemaDialect string                    `json:"jsonSchemaDialect,omitempty" yaml:"jsonSchemaDialect,omitempty"`
 	Info              Info                      `json:"info" yaml:"info"`
@@ -14,8 +19,8 @@ type Document struct {
 	ExternalDocs      *ExternalDocs             `json:"externalDocs,omitempty" yaml:"externalDocs,omitempty"`
 }
 
-func NewDocument() *Document {
-	return &Document{
+func NewSpecification() *Specification {
+	return &Specification{
 		OpenAPI:           "3.1.0",
 		JSONSchemaDialect: "https://spec.openapis.org/oas/3.1/dialect/base",
 		Servers:           []*Server{},
@@ -26,18 +31,30 @@ func NewDocument() *Document {
 	}
 }
 
-func (d *Document) GetComponents() *Components {
+func (d *Specification) Copy() *Specification {
+	dest := &Specification{}
+	buf := bytes.Buffer{}
+	if err := gob.NewEncoder(&buf).Encode(d); err != nil {
+		return nil
+	}
+	if err := gob.NewDecoder(&buf).Decode(dest); err != nil {
+		return nil
+	}
+	return dest
+}
+
+func (d *Specification) GetComponents() *Components {
 	if d.Components == nil {
 		d.Components = &Components{}
 	}
 	return d.Components
 }
 
-func (d *Document) AddTag(tag *Tag) {
+func (d *Specification) AddTag(tag *Tag) {
 	d.Tags = append(d.Tags, tag)
 }
 
-func (d *Document) GetTagByName(name string) *Tag {
+func (d *Specification) GetTagByName(name string) *Tag {
 	for _, t := range d.Tags {
 		if t.Name == name {
 			return t
@@ -46,10 +63,10 @@ func (d *Document) GetTagByName(name string) *Tag {
 	return nil
 }
 
-func (d *Document) AddServer(s *Server) {
+func (d *Specification) AddServer(s *Server) {
 	d.Servers = append(d.Servers, s)
 }
 
-func (d *Document) AddSecurityRequirement(r *SecurityRequirement) {
+func (d *Specification) AddSecurityRequirement(r *SecurityRequirement) {
 	d.Security = append(d.Security, r)
 }
