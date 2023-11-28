@@ -1,35 +1,32 @@
 package echopen
 
 import (
-	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strings"
 
-	oa3 "github.com/getkin/kin-openapi/openapi3"
+	v310 "github.com/richjyoung/echopen/openapi/v3.1.0"
+
 	"github.com/labstack/echo/v4"
 	"gopkg.in/yaml.v3"
 )
 
 type APIWrapper struct {
-	Schema *oa3.T
+	Schema *v310.Document
 	Engine *echo.Echo
 }
 
 type WrapperConfigFunc func(*APIWrapper) *APIWrapper
 
-func New(title string, apiVersion string, schemaVersion string, config ...WrapperConfigFunc) *APIWrapper {
+func New(title string, apiVersion string, config ...WrapperConfigFunc) *APIWrapper {
 	wrapper := &APIWrapper{
-		Schema: &oa3.T{
-			OpenAPI: schemaVersion,
-			Info: &oa3.Info{
-				Title:   title,
-				Version: apiVersion,
-			},
-			Paths: oa3.Paths{},
-		},
+		Schema: v310.NewDocument(),
 		Engine: echo.New(),
 	}
+
+	wrapper.Schema.Info.Title = title
+	wrapper.Schema.Info.Version = apiVersion
 
 	for _, configFunc := range config {
 		wrapper = configFunc(wrapper)
@@ -38,7 +35,7 @@ func New(title string, apiVersion string, schemaVersion string, config ...Wrappe
 	return wrapper
 }
 
-func (w *APIWrapper) ServeSchema(path string) *echo.Route {
+func (w *APIWrapper) ServeYAMLSchema(path string) *echo.Route {
 	buf, err := yaml.Marshal(w.Schema)
 
 	var handler echo.HandlerFunc = func(c echo.Context) error {
@@ -46,6 +43,20 @@ func (w *APIWrapper) ServeSchema(path string) *echo.Route {
 			return err
 		}
 		return c.Blob(http.StatusOK, "application/yaml", buf)
+	}
+
+	// Attach directly to the echo engine so the schema is not visible in the schema
+	return w.Engine.GET(path, handler)
+}
+
+func (w *APIWrapper) ServeJSONSchema(path string) *echo.Route {
+	buf, err := json.Marshal(w.Schema)
+
+	var handler echo.HandlerFunc = func(c echo.Context) error {
+		if err != nil {
+			return err
+		}
+		return c.Blob(http.StatusOK, "application/json", buf)
 	}
 
 	// Attach directly to the echo engine so the schema is not visible in the schema
@@ -91,51 +102,34 @@ func (w *APIWrapper) ServeUI(path string, schemaPath string, uiVersion string) *
 }
 
 func (w *APIWrapper) Start(addr string) error {
-
-	err := w.Schema.Validate(context.TODO())
-	if err != nil {
-		fmt.Printf("Schema validation: %s\n", err)
-	}
-
 	return w.Engine.Start(addr)
 }
 
-func (w *APIWrapper) Description(desc string) {
-	w.Schema.Info.Description = strings.TrimSpace(desc)
-}
-
-func (w *APIWrapper) Licence(lic *oa3.License) {
+func (w *APIWrapper) Licence(lic *v310.License) {
 	w.Schema.Info.License = lic
 }
 
-func (w *APIWrapper) TermsOfService(url string) {
-	w.Schema.Info.TermsOfService = url
-}
-
-func (w *APIWrapper) Contact(c *oa3.Contact) {
+func (w *APIWrapper) Contact(c *v310.Contact) {
 	w.Schema.Info.Contact = c
 }
 
 func (w *APIWrapper) Add(method string, path string, handler echo.HandlerFunc, config ...RouteConfigFunc) *RouteWrapper {
 	// Construct a new operation for this path and method
-	op := &oa3.Operation{
-		Responses: map[string]*oa3.ResponseRef{},
-	}
+	op := &v310.Operation{}
 
 	// Convert echo format to OpenAPI path
 	oapiPath := echoRouteToOpenAPI(path)
 
 	// Get the PathItem for this route
-	pathItem := w.Schema.Paths.Find(oapiPath)
-	if pathItem == nil {
-		pathItem = &oa3.PathItem{}
-		w.Schema.Paths[oapiPath] = pathItem
+	pathItemRef, ok := w.Schema.Paths[oapiPath]
+	if !ok {
+		pathItemRef = &v310.Ref[v310.PathItem]{Value: &v310.PathItem{}}
+		w.Schema.Paths[oapiPath] = pathItemRef
 	}
+	pathItem := pathItemRef.Value
 
 	// Find or create the path item for this entry
 	switch strings.ToLower(method) {
-	case "connect":
-		pathItem.Connect = op
 	case "delete":
 		pathItem.Delete = op
 	case "get":
@@ -233,33 +227,48 @@ func (w *APIWrapper) TRACE(path string, handler echo.HandlerFunc, config ...Rout
 	return w.Add("TRACE", path, handler, config...)
 }
 
-func (w *APIWrapper) GetComponents() *oa3.Components {
-	if w.Schema.Components == nil {
-		w.Schema.Components = &oa3.Components{}
+func WithSchemaDescription(desc string) WrapperConfigFunc {
+	return func(a *APIWrapper) *APIWrapper {
+		a.Schema.Info.Description = strings.TrimSpace(desc)
+		return a
 	}
-	return w.Schema.Components
 }
 
-func (w *APIWrapper) GetSchemaComponents() oa3.Schemas {
-	if w.GetComponents().Schemas == nil {
-		w.GetComponents().Schemas = oa3.Schemas{}
+func WithSchemaTermsOfService(tos string) WrapperConfigFunc {
+	return func(a *APIWrapper) *APIWrapper {
+		a.Schema.Info.TermsOfService = tos
+		return a
 	}
-	return w.GetComponents().Schemas
 }
 
-func (w *APIWrapper) AddTag(tag *oa3.Tag) {
-	w.Schema.Tags = append(w.Schema.Tags, tag)
+func WithSchemaLicense(l *v310.License) WrapperConfigFunc {
+	return func(a *APIWrapper) *APIWrapper {
+		a.Schema.Info.License = l
+		return a
+	}
 }
 
-func (w *APIWrapper) AddServer(svr *oa3.Server) {
-	w.Schema.AddServer(svr)
+func WithSchemaTag(t *v310.Tag) WrapperConfigFunc {
+	return func(a *APIWrapper) *APIWrapper {
+		a.Schema.AddTag(t)
+		return a
+	}
 }
 
-func (w *APIWrapper) AddSecurityScheme(name string, r *oa3.SecurityScheme) {
-	if w.Schema.Components.SecuritySchemes == nil {
-		w.Schema.Components.SecuritySchemes = map[string]*oa3.SecuritySchemeRef{}
+func WithSchemaContact(c *v310.Contact) WrapperConfigFunc {
+	return func(a *APIWrapper) *APIWrapper {
+		a.Schema.Info.Contact = c
+		return a
 	}
-	w.Schema.Components.SecuritySchemes[name] = &oa3.SecuritySchemeRef{
-		Value: r,
+}
+
+func WithSchemaServer(s *v310.Server) WrapperConfigFunc {
+	return func(a *APIWrapper) *APIWrapper {
+		a.Schema.AddServer(s)
+		return a
 	}
+}
+
+func (w *APIWrapper) ErrorHandler(h echo.HTTPErrorHandler) {
+	w.Engine.HTTPErrorHandler = h
 }

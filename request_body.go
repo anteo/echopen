@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"reflect"
 
-	oa3 "github.com/getkin/kin-openapi/openapi3"
+	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
+	v310 "github.com/richjyoung/echopen/openapi/v3.1.0"
 )
 
 // WithRequestBody extracts type information from a provided struct to populate the OpenAPI requestBody.
@@ -19,9 +20,16 @@ func WithRequestBody(description string, target interface{}) RouteConfigFunc {
 
 	return func(rw *RouteWrapper) *RouteWrapper {
 		rw.Middlewares = append(rw.Middlewares, func(next echo.HandlerFunc) echo.HandlerFunc {
+			val := validator.New(validator.WithRequiredStructEnabled())
 			return func(c echo.Context) error {
 				v := reflect.New(t).Interface()
 				err := (&echo.DefaultBinder{}).BindBody(c, v)
+
+				if err != nil {
+					return err
+				}
+
+				err = val.StructCtx(c.Request().Context(), v)
 
 				if err != nil {
 					return err
@@ -33,14 +41,12 @@ func WithRequestBody(description string, target interface{}) RouteConfigFunc {
 			}
 		})
 
-		rw.Operation.RequestBody = &oa3.RequestBodyRef{
-			Value: &oa3.RequestBody{
-				Description: description,
-				Content: map[string]*oa3.MediaType{
-					echo.MIMEApplicationJSON: {Schema: rw.API.ToSchemaRef(target)},
-				},
+		rw.Operation.AddRequestBody(&v310.RequestBody{
+			Description: &description,
+			Content: map[string]*v310.MediaTypeObject{
+				echo.MIMEApplicationJSON: {Schema: rw.API.ToSchemaRef(target)},
 			},
-		}
+		})
 
 		return rw
 	}

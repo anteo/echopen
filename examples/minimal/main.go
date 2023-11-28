@@ -4,15 +4,16 @@ import (
 	"github.com/richjyoung/echopen"
 )
 
-const Description = `Minimal example to get the server running`
-
 func main() {
 	// Create a new echOpen wrapper
-	api := echopen.New("Minimal", "1.0.0", "3.1.0")
-	api.Description(Description)
+	api := echopen.New(
+		"Minimal",
+		"1.0.0",
+		echopen.WithSchemaDescription("Minimal example to get the server running."),
+	)
 
 	// Serve the generated schema
-	api.ServeSchema("/openapi.yml")
+	api.ServeYAMLSchema("/openapi.yml")
 	api.ServeUI("/", "/openapi.yml", "5.10.3")
 
 	// Start the server

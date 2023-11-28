@@ -6,11 +6,11 @@ import (
 	"strconv"
 	"strings"
 
-	oa3 "github.com/getkin/kin-openapi/openapi3"
+	v310 "github.com/richjyoung/echopen/openapi/v3.1.0"
 )
 
 // ToSchemaRef takes a target value, extracts the type information, and returns a SchemaRef for that type
-func (w *APIWrapper) ToSchemaRef(target interface{}) *oa3.SchemaRef {
+func (w *APIWrapper) ToSchemaRef(target interface{}) *v310.Ref[v310.Schema] {
 	// Get the type of the target value
 	typ := reflect.TypeOf(target)
 
@@ -21,7 +21,7 @@ func (w *APIWrapper) ToSchemaRef(target interface{}) *oa3.SchemaRef {
 // TypeToSchemaRef takes a reflected type and retunrs a SchemaRef.
 // Where possible a Ref will be returned instead of a Value.
 // Struct names are assumed to be unique and thus conform to the same schema
-func (w *APIWrapper) TypeToSchemaRef(typ reflect.Type) *oa3.SchemaRef {
+func (w *APIWrapper) TypeToSchemaRef(typ reflect.Type) *v310.Ref[v310.Schema] {
 	// Check if the provided type is a pointer
 	if typ.Kind() == reflect.Pointer {
 		// Return a SchemaRef for the pointed value instead
@@ -31,58 +31,58 @@ func (w *APIWrapper) TypeToSchemaRef(typ reflect.Type) *oa3.SchemaRef {
 		name := typ.Name()
 		if name != "" {
 			// Named structs can be stored in the Schema library and referenced multiple times
-			if _, exists := w.GetSchemaComponents()[name]; !exists {
+			if w.Schema.GetComponents().GetSchema(name) == nil {
 				// First time this struct name has been seen, add to schemas
-				w.GetSchemaComponents()[name] = &oa3.SchemaRef{Value: w.TypeToSchema(typ)}
+				w.Schema.GetComponents().AddSchema(name, w.TypeToSchema(typ))
 			}
 
 			// Return a reference to the schema component
-			return &oa3.SchemaRef{
+			return &v310.Ref[v310.Schema]{
 				Ref: fmt.Sprintf("#/components/schemas/%s", name),
 			}
 		}
 
 		// Anonymous struct, return actual schema instead
-		return &oa3.SchemaRef{Value: w.TypeToSchema(typ)}
+		return &v310.Ref[v310.Schema]{Value: w.TypeToSchema(typ)}
 	} else {
 		// Not a pointer or a struct,
-		return &oa3.SchemaRef{Value: w.TypeToSchema(typ)}
+		return &v310.Ref[v310.Schema]{Value: w.TypeToSchema(typ)}
 	}
 }
 
 // TypeToSchema looks up the schema type for a given reflected type
-func (w *APIWrapper) TypeToSchema(typ reflect.Type) *oa3.Schema {
+func (w *APIWrapper) TypeToSchema(typ reflect.Type) *v310.Schema {
 	switch typ.Kind() {
 	case reflect.String:
-		return &oa3.Schema{Type: "string"}
+		return &v310.Schema{Type: "string"}
 	case reflect.Int8:
-		return &oa3.Schema{Type: "integer", Format: "int8"}
+		return &v310.Schema{Type: "integer", Format: "int8"}
 	case reflect.Int16:
-		return &oa3.Schema{Type: "integer", Format: "int16"}
+		return &v310.Schema{Type: "integer", Format: "int16"}
 	case reflect.Int32:
-		return &oa3.Schema{Type: "integer", Format: "int32"}
+		return &v310.Schema{Type: "integer", Format: "int32"}
 	case reflect.Int64:
-		return &oa3.Schema{Type: "integer", Format: "int64"}
+		return &v310.Schema{Type: "integer", Format: "int64"}
 	case reflect.Uint8:
-		return &oa3.Schema{Type: "integer", Format: "char"}
+		return &v310.Schema{Type: "integer", Format: "char"}
 	case reflect.Uint16:
-		return &oa3.Schema{Type: "integer", Format: "uint16"}
+		return &v310.Schema{Type: "integer", Format: "uint16"}
 	case reflect.Uint32:
-		return &oa3.Schema{Type: "integer", Format: "uint32"}
+		return &v310.Schema{Type: "integer", Format: "uint32"}
 	case reflect.Uint64:
-		return &oa3.Schema{Type: "integer", Format: "uint64"}
+		return &v310.Schema{Type: "integer", Format: "uint64"}
 	case reflect.Int, reflect.Uint:
-		return &oa3.Schema{Type: "integer"}
+		return &v310.Schema{Type: "integer"}
 	case reflect.Bool:
-		return &oa3.Schema{Type: "bool"}
+		return &v310.Schema{Type: "bool"}
 	case reflect.Float32:
-		return &oa3.Schema{Type: "number", Format: "float"}
+		return &v310.Schema{Type: "number", Format: "float"}
 	case reflect.Float64:
-		return &oa3.Schema{Type: "number", Format: "double"}
+		return &v310.Schema{Type: "number", Format: "double"}
 	case reflect.Map, reflect.Interface:
-		return &oa3.Schema{Type: "object"}
+		return &v310.Schema{Type: "object"}
 	case reflect.Array, reflect.Slice:
-		return &oa3.Schema{Type: "array", Items: w.TypeToSchemaRef(typ.Elem())}
+		return &v310.Schema{Type: "array", Items: w.TypeToSchemaRef(typ.Elem())}
 	case reflect.Struct:
 		// Get schema for struct including contained fields
 		return w.StructTypeToSchema(typ)
@@ -96,16 +96,16 @@ func (w *APIWrapper) TypeToSchema(typ reflect.Type) *oa3.Schema {
 
 // StructTypeToSchema iterates over struct fields to build a schema.
 // Assumes JSON content type.
-func (w *APIWrapper) StructTypeToSchema(target reflect.Type) *oa3.Schema {
+func (w *APIWrapper) StructTypeToSchema(target reflect.Type) *v310.Schema {
 	// Schema object for direct fields within the struct
-	s := &oa3.Schema{
+	s := &v310.Schema{
 		Type:       "object",
-		Properties: oa3.Schemas{},
+		Properties: map[string]*v310.Ref[v310.Schema]{},
 	}
 
 	// Schema object for composition members
-	a := &oa3.Schema{
-		AllOf: []*oa3.SchemaRef{},
+	a := &v310.Schema{
+		AllOf: []*v310.Ref[v310.Schema]{},
 	}
 
 	// Loop over all struct fields
@@ -118,42 +118,6 @@ func (w *APIWrapper) StructTypeToSchema(target reflect.Type) *oa3.Schema {
 		// Get the name from the json tag (does assume only JSON is used)
 		name := strings.Split(f.Tag.Get("json"), ",")[0]
 
-		// Extract validation rules
-		validation := strings.Split(f.Tag.Get("validate"), ",")
-		for _, val := range validation {
-			if strings.HasPrefix(val, "max=") || strings.HasPrefix(val, "lte=") {
-				max, _ := strconv.ParseInt(strings.Split(val, "=")[1], 10, 64)
-				switch ref.Value.Type {
-				case "string":
-					ref.Value.MaxLength = PtrTo(uint64(max))
-				case "number", "integer":
-					ref.Value.Max = PtrTo(float64(max))
-				}
-			} else if strings.HasPrefix(val, "min=") || strings.HasPrefix(val, "gte=") {
-				min, _ := strconv.ParseInt(strings.Split(val, "=")[1], 10, 64)
-				switch ref.Value.Type {
-				case "string":
-					ref.Value.MinLength = uint64(min)
-				case "number", "integer":
-					ref.Value.Min = PtrTo(float64(min))
-				}
-			} else if strings.HasPrefix(val, "gt=") {
-				min, _ := strconv.ParseInt(strings.Split(val, "=")[1], 10, 64)
-				switch ref.Value.Type {
-				case "number", "integer":
-					ref.Value.Min = PtrTo(float64(min))
-					ref.Value.ExclusiveMin = true
-				}
-			} else if strings.HasPrefix(val, "lt=") {
-				max, _ := strconv.ParseInt(strings.Split(val, "=")[1], 10, 64)
-				switch ref.Value.Type {
-				case "number", "integer":
-					ref.Value.Max = PtrTo(float64(max))
-					ref.Value.ExclusiveMax = true
-				}
-			}
-		}
-
 		if f.Anonymous {
 			// Anonymous members of a struct imply composition
 			a.AllOf = append(a.AllOf, ref)
@@ -162,9 +126,14 @@ func (w *APIWrapper) StructTypeToSchema(target reflect.Type) *oa3.Schema {
 			if ref.Value != nil {
 				// Populate extra schema fields from struct tags
 				ref.Value.Description = f.Tag.Get("description")
+
+				// Extract validation rules
+				ExtractValidationRules(f, ref.Value)
+
+				// Examples
 				example := f.Tag.Get("example")
 				if example != "" {
-					ref.Value.Example = example
+					ref.Value.Examples = append(ref.Value.Examples, example)
 				}
 			}
 
@@ -181,8 +150,55 @@ func (w *APIWrapper) StructTypeToSchema(target reflect.Type) *oa3.Schema {
 	// Check if composition has been detected
 	if len(a.AllOf) > 0 {
 		// Add the schema for direct field members to the allOf array and return
-		a.AllOf = append(a.AllOf, &oa3.SchemaRef{Value: s})
+		a.AllOf = append(a.AllOf, &v310.Ref[v310.Schema]{Value: s})
 		return a
 	}
 	return s
+}
+
+// ExtractValidationRules extracts known rules from the "validate" tag.
+// Assumes use of github.com/go-playground/validator/v10
+func ExtractValidationRules(field reflect.StructField, schema *v310.Schema) {
+	validation := strings.Split(field.Tag.Get("validate"), ",")
+
+	for _, val := range validation {
+		if strings.HasPrefix(val, "max=") || strings.HasPrefix(val, "lte=") {
+			max, _ := strconv.ParseInt(strings.Split(val, "=")[1], 10, 64)
+			switch schema.Type {
+			case v310.StringSchemaType:
+				schema.MaxLength = PtrTo(int(max))
+			case v310.NumberSchemaType, "integer":
+				schema.Maximum = PtrTo(float64(max))
+			case "array":
+				schema.MaxItems = PtrTo(int(max))
+			}
+		} else if strings.HasPrefix(val, "min=") || strings.HasPrefix(val, "gte=") {
+			min, _ := strconv.ParseInt(strings.Split(val, "=")[1], 10, 64)
+			switch schema.Type {
+			case v310.StringSchemaType:
+				schema.MinLength = PtrTo(int(min))
+			case "number", "integer":
+				schema.Minimum = PtrTo(float64(min))
+			case "array":
+				schema.MinItems = PtrTo(int(min))
+			}
+		} else if strings.HasPrefix(val, "gt=") {
+			min, _ := strconv.ParseInt(strings.Split(val, "=")[1], 10, 64)
+			switch schema.Type {
+			case "number", "integer":
+				schema.ExclusiveMinimum = PtrTo(float64(min))
+			}
+		} else if strings.HasPrefix(val, "lt=") {
+			max, _ := strconv.ParseInt(strings.Split(val, "=")[1], 10, 64)
+			switch schema.Type {
+			case "number", "integer":
+				schema.ExclusiveMaximum = PtrTo(float64(max))
+			}
+		} else if val == "unique" {
+			switch schema.Type {
+			case "array":
+				schema.UniqueItems = true
+			}
+		}
+	}
 }

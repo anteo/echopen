@@ -4,21 +4,24 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/labstack/echo/v4"
 	"github.com/richjyoung/echopen"
+	v310 "github.com/richjyoung/echopen/openapi/v3.1.0"
 )
 
 const Description = `Demonstration of routes with security requirements`
 
 func main() {
 	// Create a new echOpen wrapper
-	api := echopen.New("Hello World", "1.0.0", "3.1.0")
-	api.Description(Description)
-	api.Licence(&openapi3.License{Name: "MIT", URL: "https://example.com/licence"})
+	api := echopen.New(
+		"Hello World",
+		"1.0.0",
+		echopen.WithSchemaDescription(Description),
+		echopen.WithSchemaLicense(&v310.License{Name: "MIT", URL: "https://example.com/license"}),
+	)
 
-	api.AddSecurityScheme("api_key", &openapi3.SecurityScheme{
-		Type: echopen.OpenAPISecuritySchemeAPIKey,
+	api.Schema.GetComponents().AddSecurityScheme("api_key", &v310.SecurityScheme{
+		Type: v310.APIKeySecuritySchemeType,
 		In:   "header",
 		Name: "X-API-Key",
 	})
@@ -28,7 +31,7 @@ func main() {
 		"/hello",
 		hello,
 		echopen.WithOptionalSecurity(),
-		echopen.WithSecurityRequirement(openapi3.SecurityRequirement{"api_key": []string{}}),
+		echopen.WithSecurityRequirement(&v310.SecurityRequirement{"api_key": []string{}}),
 		echopen.WithResponseBody(fmt.Sprint(http.StatusOK), "Default response", ""),
 	)
 
@@ -36,12 +39,12 @@ func main() {
 	api.GET(
 		"/hello_secure",
 		hello,
-		echopen.WithSecurityRequirement(openapi3.SecurityRequirement{"api_key": []string{}}),
+		echopen.WithSecurityRequirement(&v310.SecurityRequirement{"api_key": []string{}}),
 		echopen.WithResponseBody(fmt.Sprint(http.StatusOK), "Default response", ""),
 	)
 
 	// Serve the generated schema
-	api.ServeSchema("/openapi.yml")
+	api.ServeYAMLSchema("/openapi.yml")
 	api.ServeUI("/", "/openapi.yml", "5.10.3")
 
 	// Start the server

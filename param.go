@@ -4,14 +4,15 @@ import (
 	"fmt"
 	"reflect"
 
-	oa3 "github.com/getkin/kin-openapi/openapi3"
 	"github.com/labstack/echo/v4"
+	v310 "github.com/richjyoung/echopen/openapi/v3.1.0"
 )
 
 type PathParameter struct {
 	Name        string
 	Description string
 	ContextKey  string
+	Schema      *v310.Schema
 }
 
 func WithPathParameter(param *PathParameter) RouteConfigFunc {
@@ -27,12 +28,53 @@ func WithPathParameter(param *PathParameter) RouteConfigFunc {
 			}
 		})
 
-		rw.Operation.AddParameter(&oa3.Parameter{
+		rw.Operation.AddParameter(&v310.Parameter{
 			Name:        param.Name,
 			In:          "path",
 			Description: param.Description,
 			Required:    true,
+			Schema:      param.Schema,
 		})
+
+		return rw
+	}
+}
+
+// WithPathStruct extracts type information from a provided struct to populate the OpenAPI operation parameters.
+// A bound struct of the same type is added to the context under the key "param" during each request
+func WithPathStruct(target interface{}) RouteConfigFunc {
+	t := reflect.TypeOf(target)
+	if t.Kind() != reflect.Struct {
+		panic(fmt.Errorf("echopen: struct expected, received %s", t.Kind()))
+	}
+
+	return func(rw *RouteWrapper) *RouteWrapper {
+		rw.Middlewares = append(rw.Middlewares, func(next echo.HandlerFunc) echo.HandlerFunc {
+			return func(c echo.Context) error {
+				v := reflect.New(t).Interface()
+				err := (&echo.DefaultBinder{}).BindPathParams(c, v)
+
+				if err != nil {
+					return err
+				}
+
+				c.Set("param", v)
+
+				return next(c)
+			}
+		})
+
+		for i := 0; i < t.NumField(); i++ {
+			f := t.Field(i)
+			tag := f.Tag.Get("param")
+			rw.Operation.AddParameter(&v310.Parameter{
+				Name:        tag,
+				In:          "path",
+				Required:    true,
+				Description: f.Tag.Get("description"),
+				Schema:      rw.API.TypeToSchema(f.Type),
+			})
+		}
 
 		return rw
 	}
@@ -65,14 +107,13 @@ func WithQueryStruct(target interface{}) RouteConfigFunc {
 		for i := 0; i < t.NumField(); i++ {
 			f := t.Field(i)
 			tag := f.Tag.Get("query")
-			rw.Operation.AddParameter(&oa3.Parameter{
+			rw.Operation.AddParameter(&v310.Parameter{
 				Name:        tag,
 				In:          "query",
 				Required:    f.Type.Kind() != reflect.Ptr,
 				Description: f.Tag.Get("description"),
-				Schema: &oa3.SchemaRef{
-					Value: rw.API.TypeToSchema(f.Type),
-				},
+				Style:       "form",
+				Schema:      rw.API.TypeToSchema(f.Type),
 			})
 		}
 

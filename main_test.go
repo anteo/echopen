@@ -1,46 +1,21 @@
-package main
+package echopen_test
 
 import (
 	"fmt"
 	"net/http"
+	"testing"
 
 	"github.com/labstack/echo/v4"
 	"github.com/richjyoung/echopen"
 	v310 "github.com/richjyoung/echopen/openapi/v3.1.0"
 )
 
-const Description = `Basic Example
-=============
-
-Test API for basic usage of echOpen.
-`
-
-type QueryParams struct {
-	Offset *int `query:"offset" description:"Offset into results"`
-	Limit  int  `query:"limit"`
-}
-
-type RequestBodySettings struct {
-	Enabled bool        `json:"enabled" description:"Enabled flag"`
-	Other   interface{} `json:"other"`
-}
-
-type RequestBody struct {
-	FirstName string  `json:"first_name,omitempty" description:"User first name" example:"Joe"`
-	LastName  string  `json:"last_name,omitempty" description:"User last name" example:"Bloggs"`
-	Email     *string `json:"email,omitempty" description:"Optional email address" example:"joe_bloggs@example.com"`
-	Meta      struct {
-		TermsAndConditions *int `json:"terms_and_conditions,omitempty" description:"Date of T&Cs acceptance"`
-	} `json:"meta,omitempty"`
-	Settings *RequestBodySettings `json:"settings,omitempty"`
-}
-
-func main() {
+func TestXxx(t *testing.T) {
 	// Create a new echOpen wrapper
 	api := echopen.New(
 		"Basic Example",
 		"1.0.0",
-		echopen.WithSchemaDescription("Test API for basic usage of echOpen."),
+		echopen.WithSchemaDescription("Basic Example API Server."),
 		echopen.WithSchemaLicense(&v310.License{Name: "MIT", URL: "https://example.com/license"}),
 		echopen.WithSchemaTag(&v310.Tag{Name: "hello_world", Description: "Hello World API Routes"}),
 		echopen.WithSchemaTag(&v310.Tag{Name: "param", Description: "Routes with params"}),
@@ -61,10 +36,26 @@ func main() {
 	// Serve the generated schema
 	api.ServeJSONSchema("/openapi.json")
 	api.ServeYAMLSchema("/openapi.yml")
-	api.ServeUI("/", "/openapi.yml", "5.10.3")
+}
 
-	// Start the server
-	api.Start("localhost:3030")
+type QueryParams struct {
+	Offset *int `query:"offset" description:"Offset into results"`
+	Limit  int  `query:"limit"`
+}
+
+type RequestBodySettings struct {
+	Enabled bool        `json:"enabled" description:"Enabled flag"`
+	Other   interface{} `json:"other"`
+}
+
+type RequestBody struct {
+	FirstName string  `json:"first_name,omitempty" description:"User first name" example:"Joe"`
+	LastName  string  `json:"last_name,omitempty" description:"User last name" example:"Bloggs"`
+	Email     *string `json:"email,omitempty" description:"Optional email address" example:"joe_bloggs@example.com"`
+	Meta      struct {
+		TermsAndConditions *int `json:"terms_and_conditions,omitempty" description:"Date of T&Cs acceptance"`
+	} `json:"meta,omitempty"`
+	Settings *RequestBodySettings `json:"settings,omitempty"`
 }
 
 func hello(c echo.Context) error {

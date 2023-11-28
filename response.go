@@ -1,19 +1,25 @@
 package echopen
 
 import (
+	"fmt"
 	"reflect"
 
-	oa3 "github.com/getkin/kin-openapi/openapi3"
 	"github.com/labstack/echo/v4"
+	v310 "github.com/richjyoung/echopen/openapi/v3.1.0"
 )
+
+func WithResponseRef(code string, name string) RouteConfigFunc {
+	return func(rw *RouteWrapper) *RouteWrapper {
+		rw.Operation.AddResponseRef(code, fmt.Sprintf("#/components/responses/%s", name))
+		return rw
+	}
+}
 
 func WithResponse(code string, description string) RouteConfigFunc {
 	return func(rw *RouteWrapper) *RouteWrapper {
-		rw.Operation.Responses[code] = &oa3.ResponseRef{
-			Value: &oa3.Response{
-				Description: &description,
-			},
-		}
+		rw.Operation.AddResponse(code, &v310.Response{
+			Description: &description,
+		})
 
 		return rw
 	}
@@ -29,27 +35,25 @@ func WithResponseBody(code string, description string, target interface{}) Route
 	}
 
 	return func(rw *RouteWrapper) *RouteWrapper {
-		rw.Operation.Responses[code] = &oa3.ResponseRef{
-			Value: &oa3.Response{
-				Description: &description,
-				Content: map[string]*oa3.MediaType{
-					mime: {Schema: rw.API.ToSchemaRef(target)},
-				},
+		rw.Operation.AddResponse(code, &v310.Response{
+			Description: &description,
+			Content: map[string]*v310.MediaTypeObject{
+				mime: {Schema: rw.API.ToSchemaRef(target)},
 			},
-		}
+		})
 
 		return rw
 	}
 }
 
-func WithResponseFile(code int, description string, mime string) RouteConfigFunc {
+func WithResponseFile(code string, description string, mime string) RouteConfigFunc {
 	return func(rw *RouteWrapper) *RouteWrapper {
-		rw.Operation.AddResponse(code, &oa3.Response{
+		rw.Operation.AddResponse(code, &v310.Response{
 			Description: &description,
-			Content: map[string]*oa3.MediaType{
-				mime: {Schema: &oa3.SchemaRef{
-					Value: &oa3.Schema{
-						Type:   "string",
+			Content: map[string]*v310.MediaTypeObject{
+				mime: {Schema: &v310.Ref[v310.Schema]{
+					Value: &v310.Schema{
+						Type:   v310.StringSchemaType,
 						Format: "binary",
 					},
 				}},

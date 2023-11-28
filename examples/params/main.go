@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/labstack/echo/v4"
 	"github.com/richjyoung/echopen"
+	v310 "github.com/richjyoung/echopen/openapi/v3.1.0"
 )
 
 const Description = `
@@ -16,6 +16,10 @@ Parameters
 
 Example including path and query parameters.
 `
+
+type PathParams struct {
+	ID string `param:"id" description:"ID Parameter"`
+}
 
 type QueryParams struct {
 	Notes *string `query:"notes" description:"Optional notes to include in response"`
@@ -32,25 +36,20 @@ type ErrorResponseBody struct {
 
 func main() {
 	// Create a new echOpen wrapper
-	api := echopen.New("Parameters", "1.0.0", "3.1.0")
-	api.Description(Description)
-	api.Licence(&openapi3.License{Name: "MIT", URL: "https://example.com/licence"})
-
-	// Configure tags
-	api.AddTag(&openapi3.Tag{
-		Name:        "params",
-		Description: "Params API Routes",
-	})
+	api := echopen.New(
+		"Parameters",
+		"1.0.0",
+		echopen.WithSchemaDescription(Description),
+		echopen.WithSchemaLicense(&v310.License{Name: "MIT", URL: "https://example.com/license"}),
+		echopen.WithSchemaTag(&v310.Tag{Name: "params", Description: "Params API Routes"}),
+	)
 
 	// Params route
 	api.GET(
 		"/params/:id",
 		getParamsByID,
 		echopen.WithTags("params"),
-		echopen.WithPathParameter(&echopen.PathParameter{
-			Name:        "id",
-			Description: "ID Parameter",
-		}),
+		echopen.WithPathStruct(PathParams{}),
 		echopen.WithQueryStruct(QueryParams{}),
 		echopen.WithResponseBody(fmt.Sprint(http.StatusOK), "Default response", ValidResponseBody{}),
 		echopen.WithResponseBody(fmt.Sprint(http.StatusBadRequest), "Bad request", ErrorResponseBody{}),
@@ -58,7 +57,7 @@ func main() {
 	)
 
 	// Serve the generated schema
-	api.ServeSchema("/openapi.yml")
+	api.ServeYAMLSchema("/openapi.yml")
 	api.ServeUI("/", "/openapi.yml", "5.10.3")
 
 	// Start the server

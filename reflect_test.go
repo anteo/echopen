@@ -56,26 +56,26 @@ func TestReflect(t *testing.T) {
 		{"str_ptr", PtrTo("test_string"), `{"type":"string"}`},
 		{"int", 42, `{"type":"integer"}`},
 		{"int_ptr", PtrTo(42), `{"type":"integer"}`},
-		{"uint8", uint8(42), `{"format":"char","type":"integer"}`},
-		{"uint16", uint16(42), `{"format":"uint16","type":"integer"}`},
-		{"uint32", uint32(42), `{"format":"uint32","type":"integer"}`},
-		{"uint64", uint64(42), `{"format":"uint64","type":"integer"}`},
-		{"int8", int8(42), `{"format":"int8","type":"integer"}`},
-		{"int16", int16(42), `{"format":"int16","type":"integer"}`},
-		{"int32", int32(42), `{"format":"int32","type":"integer"}`},
-		{"int64", int64(42), `{"format":"int64","type":"integer"}`},
-		{"float32", float32(42.0), `{"format":"float","type":"number"}`},
-		{"float64", float64(42.0), `{"format":"double","type":"number"}`},
+		{"uint8", uint8(42), `{"type":"integer","format":"char"}`},
+		{"uint16", uint16(42), `{"type":"integer","format":"uint16"}`},
+		{"uint32", uint32(42), `{"type":"integer","format":"uint32"}`},
+		{"uint64", uint64(42), `{"type":"integer","format":"uint64"}`},
+		{"int8", int8(42), `{"type":"integer","format":"int8"}`},
+		{"int16", int16(42), `{"type":"integer","format":"int16"}`},
+		{"int32", int32(42), `{"type":"integer","format":"int32"}`},
+		{"int64", int64(42), `{"type":"integer","format":"int64"}`},
+		{"float32", float32(42.0), `{"type":"number","format":"float"}`},
+		{"float64", float64(42.0), `{"type":"number","format":"double"}`},
 		{"bool", true, `{"type":"bool"}`},
 		{"map", map[string]interface{}{}, `{"type":"object"}`},
-		{"slice", []string{}, `{"items":{"type":"string"},"type":"array"}`},
+		{"slice", []string{}, `{"type":"array","items":{"type":"string"}}`},
 		{"struct", TestStruct{}, `{"$ref":"#/components/schemas/TestStruct"}`},
 		{"struct_ptr", &TestStruct{}, `{"$ref":"#/components/schemas/TestStruct"}`},
 	}
 
 	for _, tc := range defs {
 		t.Run(tc.Name, func(t *testing.T) {
-			w := New("Test API", "1.0.0", "3.1.0")
+			w := New("Test API", "1.0.0")
 			ref := w.ToSchemaRef(tc.Target)
 			buf, _ := json.Marshal(ref)
 			assert.Equal(t, tc.Expected, string(buf))
@@ -94,48 +94,48 @@ func TestReflectStruct(t *testing.T) {
 		{
 			Name:     "str",
 			Target:   TestStruct{},
-			Expected: `{"properties":{"test":{"type":"string"}},"required":["test"],"type":"object"}`,
+			Expected: `{"type":"object","required":["test"],"properties":{"test":{"type":"string"}}}`,
 		},
 		{
 			Name:     "str_ptr",
 			Target:   TestStructString{},
-			Expected: `{"properties":{"test":{"description":"Test string","example":"a_test","type":"string"}},"type":"object"}`,
+			Expected: `{"type":"object","properties":{"test":{"description":"Test string","examples":["a_test"],"type":"string"}}}`,
 		},
 		{
 			Name:     "nested",
 			Target:   TestStructNested{},
-			Expected: `{"properties":{"nested":{"$ref":"#/components/schemas/TestStruct"}},"required":["nested"],"type":"object"}`,
+			Expected: `{"type":"object","required":["nested"],"properties":{"nested":{"$ref":"#/components/schemas/TestStruct"}}}`,
 		},
 		{
 			Name:     "nested_anon",
 			Target:   TestStructNestedAnon{},
-			Expected: `{"properties":{"nested":{"properties":{"test":{"type":"string"}},"required":["test"],"type":"object"}},"required":["nested"],"type":"object"}`,
+			Expected: `{"type":"object","required":["nested"],"properties":{"nested":{"type":"object","required":["test"],"properties":{"test":{"type":"string"}}}}}`,
 		},
 		{
 			Name:     "nested_ptr",
 			Target:   TestStructNestedPtr{},
-			Expected: `{"properties":{"nested":{"$ref":"#/components/schemas/TestStruct"}},"type":"object"}`,
+			Expected: `{"type":"object","properties":{"nested":{"$ref":"#/components/schemas/TestStruct"}}}`,
 		},
 		{
 			Name:     "iface",
 			Target:   TestStructIface{},
-			Expected: `{"properties":{"iface":{"type":"object"}},"type":"object"}`,
+			Expected: `{"type":"object","properties":{"iface":{"type":"object"}}}`,
 		},
 		{
 			Name:     "composition",
 			Target:   TestStructComposition{},
-			Expected: `{"allOf":[{"$ref":"#/components/schemas/TestStruct"},{"properties":{"test2":{"type":"string"}},"required":["test2"],"type":"object"}]}`,
+			Expected: `{"allOf":[{"$ref":"#/components/schemas/TestStruct"},{"type":"object","required":["test2"],"properties":{"test2":{"type":"string"}}}]}`,
 		},
 		{
 			Name:     "validation",
 			Target:   TestStructValidation{},
-			Expected: `{"properties":{"num_range":{"exclusiveMaximum":true,"exclusiveMinimum":true,"maximum":10,"minimum":1,"type":"integer"},"string_len":{"maxLength":10,"minLength":1,"type":"string"}},"type":"object"}`,
+			Expected: `{"type":"object","properties":{"num_range":{"type":"integer","exclusiveMaximum":10,"exclusiveMinimum":1},"string_len":{"type":"string","maxLength":10,"minLength":1}}}`,
 		},
 	}
 
 	for _, tc := range defs {
 		t.Run(tc.Name, func(t *testing.T) {
-			w := New("Test API", "1.0.0", "3.1.0")
+			w := New("Test API", "1.0.0")
 			ref := w.StructTypeToSchema(reflect.TypeOf(tc.Target))
 			buf, _ := json.Marshal(ref)
 			assert.Equal(t, tc.Expected, string(buf))

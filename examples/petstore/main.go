@@ -4,24 +4,26 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/labstack/echo/v4"
 	"github.com/richjyoung/echopen"
+	v310 "github.com/richjyoung/echopen/openapi/v3.1.0"
 )
 
 func main() {
 	// Create a new echOpen wrapper
-	api := echopen.New("Swagger Petstore", "1.0.0", "3.0.0")
-	api.Description("A sample API that uses a petstore as an example to demonstrate features in the OpenAPI 3.0 specification")
-	api.Licence(&openapi3.License{Name: "Apache 2.0", URL: "https://www.apache.org/licenses/LICENSE"})
-	api.TermsOfService("http://swagger.io/terms/")
-	api.Contact(&openapi3.Contact{
-		Name:  "Swagger API Team",
-		Email: "apiteam@swagger.io",
-		URL:   "http://swagger.io",
-	})
-
-	api.AddServer(&openapi3.Server{URL: "https://petstore.swagger.io/v2"})
+	api := echopen.New(
+		"Swagger Petstore",
+		"1.0.0",
+		echopen.WithSchemaDescription("A sample API that uses a petstore as an example to demonstrate features in the OpenAPI 3.0 specification"),
+		echopen.WithSchemaLicense(&v310.License{Name: "Apache 2.0", URL: "https://www.apache.org/licenses/LICENSE"}),
+		echopen.WithSchemaTermsOfService("http://swagger.io/terms/"),
+		echopen.WithSchemaContact(&v310.Contact{
+			Name:  "Swagger API Team",
+			Email: "apiteam@swagger.io",
+			URL:   "http://swagger.io",
+		}),
+		echopen.WithSchemaServer(&v310.Server{URL: "https://petstore.swagger.io/v2"}),
+	)
 
 	api.GET(
 		"/pets",
@@ -54,9 +56,12 @@ Sed tempus felis lobortis leo pulvinar rutrum. Nam mattis velit nisl, eu condime
 		echopen.WithOperationID("findPetByID"),
 		echopen.WithDescription("Returns a user based on a single ID, if the user does not have access to the pet"),
 		echopen.WithPathParameter(&echopen.PathParameter{
-			// TODO: needs schema integer/int64
 			Name:        "id",
 			Description: "ID of pet to fetch",
+			Schema: &v310.Schema{
+				Type:   v310.IntegerSchemaType,
+				Format: "int64",
+			},
 		}),
 		echopen.WithResponseBody(fmt.Sprint(http.StatusOK), "pet response", Pet{}),
 		echopen.WithResponseBody("default", "unexpected error", Error{}),
@@ -68,16 +73,19 @@ Sed tempus felis lobortis leo pulvinar rutrum. Nam mattis velit nisl, eu condime
 		echopen.WithOperationID("deletePet"),
 		echopen.WithDescription("deletes a single pet based on the ID supplied"),
 		echopen.WithPathParameter(&echopen.PathParameter{
-			// TODO: needs schema integer/int64
 			Name:        "id",
 			Description: "ID of pet to delete",
+			Schema: &v310.Schema{
+				Type:   v310.IntegerSchemaType,
+				Format: "int64",
+			},
 		}),
 		echopen.WithResponse(fmt.Sprint(http.StatusNoContent), "pet deleted"),
 		echopen.WithResponseBody("default", "unexpected error", Error{}),
 	)
 
 	// Serve the generated schema
-	api.ServeSchema("/openapi.yml")
+	api.ServeYAMLSchema("/openapi.yml")
 	api.ServeUI("/", "/openapi.yml", "5.10.3")
 
 	// Start the server

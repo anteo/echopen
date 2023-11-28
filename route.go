@@ -4,15 +4,15 @@ import (
 	"fmt"
 	"strings"
 
-	oa3 "github.com/getkin/kin-openapi/openapi3"
 	"github.com/labstack/echo/v4"
+	v310 "github.com/richjyoung/echopen/openapi/v3.1.0"
 )
 
 type RouteWrapper struct {
 	API         *APIWrapper
 	Group       *GroupWrapper
-	Operation   *oa3.Operation
-	PathItem    *oa3.PathItem
+	Operation   *v310.Operation
+	PathItem    *v310.PathItem
 	Handler     echo.HandlerFunc
 	Middlewares []echo.MiddlewareFunc
 	Route       *echo.Route
@@ -30,12 +30,12 @@ func WithEchoRouteMiddlewares(m ...echo.MiddlewareFunc) RouteConfigFunc {
 func WithTags(tags ...string) RouteConfigFunc {
 	return func(rw *RouteWrapper) *RouteWrapper {
 		for _, tag := range tags {
-			if rw.API.Schema.Tags.Get(tag) == nil {
+			if rw.API.Schema.GetTagByName(tag) == nil {
 				panic(fmt.Sprintf("echopen: tag '%s' not registered", tag))
 			}
 		}
 
-		rw.Operation.Tags = append(rw.Operation.Tags, tags...)
+		rw.Operation.AddTags(tags...)
 		return rw
 	}
 }
@@ -49,12 +49,12 @@ func WithOperationID(id string) RouteConfigFunc {
 
 func WithDescription(desc string) RouteConfigFunc {
 	return func(rw *RouteWrapper) *RouteWrapper {
-		rw.Operation.Description = strings.TrimSpace((desc))
+		rw.Operation.Description = strings.TrimSpace(desc)
 		return rw
 	}
 }
 
-func WithParameter(param *oa3.Parameter) RouteConfigFunc {
+func WithParameter(param *v310.Parameter) RouteConfigFunc {
 	return func(rw *RouteWrapper) *RouteWrapper {
 		rw.Operation.AddParameter(param)
 		return rw
@@ -63,28 +63,14 @@ func WithParameter(param *oa3.Parameter) RouteConfigFunc {
 
 func WithOptionalSecurity() RouteConfigFunc {
 	return func(rw *RouteWrapper) *RouteWrapper {
-		if rw.Operation.Security == nil {
-			rw.Operation.Security = &oa3.SecurityRequirements{}
-		}
-
-		sec := *rw.Operation.Security
-		sec = append(sec, map[string][]string{})
-		rw.Operation.Security = &sec
-
+		rw.Operation.AddSecurityRequirement(&v310.SecurityRequirement{})
 		return rw
 	}
 }
 
-func WithSecurityRequirement(req oa3.SecurityRequirement) RouteConfigFunc {
+func WithSecurityRequirement(req *v310.SecurityRequirement) RouteConfigFunc {
 	return func(rw *RouteWrapper) *RouteWrapper {
-		if rw.Operation.Security == nil {
-			rw.Operation.Security = &oa3.SecurityRequirements{}
-		}
-
-		sec := *rw.Operation.Security
-		sec = append(sec, req)
-		rw.Operation.Security = &sec
-
+		rw.Operation.AddSecurityRequirement(req)
 		return rw
 	}
 }

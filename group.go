@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	oa3 "github.com/getkin/kin-openapi/openapi3"
 	"github.com/labstack/echo/v4"
+	v310 "github.com/richjyoung/echopen/openapi/v3.1.0"
 )
 
 type GroupWrapper struct {
@@ -13,7 +13,7 @@ type GroupWrapper struct {
 	Prefix               string
 	Middlewares          []echo.MiddlewareFunc
 	Tags                 []string
-	SecurityRequirements oa3.SecurityRequirements
+	SecurityRequirements []*v310.SecurityRequirement
 	Group                *echo.Group
 }
 
@@ -21,9 +21,7 @@ type GroupConfigFunc func(*GroupWrapper) *GroupWrapper
 
 func (g *GroupWrapper) Add(method string, path string, handler echo.HandlerFunc, config ...RouteConfigFunc) *RouteWrapper {
 	// Construct a new operation for this path and method
-	op := &oa3.Operation{
-		Responses: map[string]*oa3.ResponseRef{},
-	}
+	op := &v310.Operation{}
 
 	// Get full path from group
 	fullPath := g.Prefix + path
@@ -32,16 +30,15 @@ func (g *GroupWrapper) Add(method string, path string, handler echo.HandlerFunc,
 	oapiPath := echoRouteToOpenAPI(fullPath)
 
 	// Get the PathItem for this route
-	pathItem := g.API.Schema.Paths.Find(oapiPath)
-	if pathItem == nil {
-		pathItem = &oa3.PathItem{}
-		g.API.Schema.Paths[oapiPath] = pathItem
+	pathItemRef, ok := g.API.Schema.Paths[oapiPath]
+	if !ok {
+		pathItemRef = &v310.Ref[v310.PathItem]{Value: &v310.PathItem{}}
+		g.API.Schema.Paths[oapiPath] = pathItemRef
 	}
+	pathItem := pathItemRef.Value
 
 	// Find or create the path item for this entry
 	switch strings.ToLower(method) {
-	case "connect":
-		pathItem.Connect = op
 	case "delete":
 		pathItem.Delete = op
 	case "get":
@@ -88,7 +85,7 @@ func (g *GroupWrapper) Add(method string, path string, handler echo.HandlerFunc,
 
 	// Ensure the operation ID is set, and the echo route is given the same name
 	if wrapper.Operation.OperationID == "" {
-		wrapper.Operation.OperationID = genOpID(method, fullPath)
+		wrapper.Operation.OperationID = genOpID(method, path)
 	}
 	wrapper.Route.Name = wrapper.Operation.OperationID
 
@@ -145,7 +142,7 @@ func WithGroupTags(tags ...string) GroupConfigFunc {
 	}
 }
 
-func WithGroupSecurityRequirement(req oa3.SecurityRequirement) GroupConfigFunc {
+func WithGroupSecurityRequirement(req *v310.SecurityRequirement) GroupConfigFunc {
 	return func(gw *GroupWrapper) *GroupWrapper {
 		gw.SecurityRequirements = append(gw.SecurityRequirements, req)
 		return gw
