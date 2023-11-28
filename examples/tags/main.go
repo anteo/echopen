@@ -37,7 +37,9 @@ func main() {
 	)
 
 	// Serve the generated schema
-	api.ServeYAMLSpec("/openapi.yml", echopen.IncludeTags("hello_world"))
+	api.ServeYAMLSpec("/openapi.yml", echopen.ExcludeTags("hidden"))
+	api.ServeYAMLSpec("/openapi_hidden_only.yml", echopen.IncludeTags("hidden"))
+	api.ServeYAMLSpec("/openapi_all.yml")
 	api.ServeUI("/", "/openapi.yml", "5.10.3")
 
 	// Start the server
