@@ -17,8 +17,6 @@ type APIWrapper struct {
 	Engine *echo.Echo
 }
 
-type WrapperConfigFunc func(*APIWrapper) *APIWrapper
-
 func New(title string, apiVersion string, config ...WrapperConfigFunc) *APIWrapper {
 	wrapper := &APIWrapper{
 		Schema: v310.NewDocument(),
@@ -27,6 +25,7 @@ func New(title string, apiVersion string, config ...WrapperConfigFunc) *APIWrapp
 
 	wrapper.Schema.Info.Title = title
 	wrapper.Schema.Info.Version = apiVersion
+	wrapper.Engine.HTTPErrorHandler = DefaultErrorHandler
 
 	for _, configFunc := range config {
 		wrapper = configFunc(wrapper)
@@ -158,18 +157,21 @@ func (w *APIWrapper) Add(method string, path string, handler echo.HandlerFunc, c
 		Handler:   handler,
 	}
 
+	// Set default operation ID
+	wrapper.Operation.OperationID = genOpID(method, path)
+
 	// Apply config transforms
 	for _, configFunc := range config {
 		wrapper = configFunc(wrapper)
 	}
 
-	// Add the route in to the echo engine
-	wrapper.Route = w.Engine.Add(method, path, wrapper.Handler, wrapper.Middlewares...)
+	// Add validation middleware to the start of the chain
+	middlewares := append([]echo.MiddlewareFunc{wrapper.validationMiddleware()}, wrapper.Middlewares...)
 
-	// Ensure the operation ID is set, and the echo route is given the same name
-	if wrapper.Operation.OperationID == "" {
-		wrapper.Operation.OperationID = genOpID(method, path)
-	}
+	// Add the route in to the echo engine
+	wrapper.Route = w.Engine.Add(method, path, wrapper.Handler, middlewares...)
+
+	// Give the echo route the same name
 	wrapper.Route.Name = wrapper.Operation.OperationID
 
 	return wrapper
@@ -225,48 +227,6 @@ func (w *APIWrapper) PUT(path string, handler echo.HandlerFunc, config ...RouteC
 
 func (w *APIWrapper) TRACE(path string, handler echo.HandlerFunc, config ...RouteConfigFunc) *RouteWrapper {
 	return w.Add("TRACE", path, handler, config...)
-}
-
-func WithSchemaDescription(desc string) WrapperConfigFunc {
-	return func(a *APIWrapper) *APIWrapper {
-		a.Schema.Info.Description = strings.TrimSpace(desc)
-		return a
-	}
-}
-
-func WithSchemaTermsOfService(tos string) WrapperConfigFunc {
-	return func(a *APIWrapper) *APIWrapper {
-		a.Schema.Info.TermsOfService = tos
-		return a
-	}
-}
-
-func WithSchemaLicense(l *v310.License) WrapperConfigFunc {
-	return func(a *APIWrapper) *APIWrapper {
-		a.Schema.Info.License = l
-		return a
-	}
-}
-
-func WithSchemaTag(t *v310.Tag) WrapperConfigFunc {
-	return func(a *APIWrapper) *APIWrapper {
-		a.Schema.AddTag(t)
-		return a
-	}
-}
-
-func WithSchemaContact(c *v310.Contact) WrapperConfigFunc {
-	return func(a *APIWrapper) *APIWrapper {
-		a.Schema.Info.Contact = c
-		return a
-	}
-}
-
-func WithSchemaServer(s *v310.Server) WrapperConfigFunc {
-	return func(a *APIWrapper) *APIWrapper {
-		a.Schema.AddServer(s)
-		return a
-	}
 }
 
 func (w *APIWrapper) ErrorHandler(h echo.HTTPErrorHandler) {

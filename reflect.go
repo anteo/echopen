@@ -116,7 +116,7 @@ func (w *APIWrapper) StructTypeToSchema(target reflect.Type) *v310.Schema {
 		ref := w.TypeToSchemaRef(f.Type)
 
 		// Get the name from the json tag (does assume only JSON is used)
-		name := strings.Split(f.Tag.Get("json"), ",")[0]
+		name, omitEmpty := ExtractJSONTags(f)
 
 		if f.Anonymous {
 			// Anonymous members of a struct imply composition
@@ -140,8 +140,8 @@ func (w *APIWrapper) StructTypeToSchema(target reflect.Type) *v310.Schema {
 			// Add the field schema to the struct properties map
 			s.Properties[name] = ref
 
-			// Mark field required if not a pointer or interface
-			if f.Type.Kind() != reflect.Pointer && f.Type.Kind() != reflect.Interface {
+			// Mark field required if omitempty is not present
+			if !omitEmpty {
 				s.Required = append(s.Required, name)
 			}
 		}
@@ -154,6 +154,15 @@ func (w *APIWrapper) StructTypeToSchema(target reflect.Type) *v310.Schema {
 		return a
 	}
 	return s
+}
+
+func ExtractJSONTags(field reflect.StructField) (string, bool) {
+	parts := strings.Split(field.Tag.Get("json"), ",")
+	name := parts[0]
+	if len(parts) > 1 && parts[1] == "omitempty" {
+		return name, true
+	}
+	return name, false
 }
 
 // ExtractValidationRules extracts known rules from the "validate" tag.

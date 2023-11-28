@@ -9,21 +9,21 @@ import (
 )
 
 type TestStruct struct {
-	Test string `json:"test,omitempty"`
+	Test string `json:"test"`
 }
 
 type TestStructString struct {
-	Test *string `json:"test,omitempty" description:"Test string" example:"a_test"`
+	Test string `json:"test,omitempty" description:"Test string" example:"a_test"`
 }
 
 type TestStructNested struct {
-	Nested TestStruct `json:"nested,omitempty"`
+	Nested TestStruct `json:"nested"`
 }
 
 type TestStructNestedAnon struct {
 	Nested struct {
-		Test string `json:"test,omitempty"`
-	} `json:"nested,omitempty"`
+		Test string `json:"test"`
+	} `json:"nested"`
 }
 
 type TestStructNestedPtr struct {
@@ -35,13 +35,13 @@ type TestStructIface struct {
 }
 
 type TestStructComposition struct {
-	Test2 string `json:"test2,omitempty"`
+	Test2 string `json:"test2"`
 	TestStruct
 }
 
 type TestStructValidation struct {
-	StringLen *string `json:"string_len,omitempty" validate:"max=10,min=1"`
-	NumRange  *int    `json:"num_range,omitempty" validate:"lt=10,gt=1"`
+	StringLen string `json:"string_len,omitempty" validate:"max=10,min=1"`
+	NumRange  int    `json:"num_range,omitempty" validate:"lt=10,gt=1"`
 }
 
 func TestReflect(t *testing.T) {

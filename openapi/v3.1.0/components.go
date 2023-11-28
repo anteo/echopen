@@ -43,3 +43,12 @@ func (c *Components) AddSecurityScheme(name string, s *SecurityScheme) {
 	}
 	c.SecuritySchemes[name] = s
 }
+
+func (c *Components) GetSecurityScheme(name string) *SecurityScheme {
+	if c.SecuritySchemes == nil {
+		return nil
+	} else if v, ok := c.SecuritySchemes[name]; ok {
+		return v
+	}
+	return nil
+}

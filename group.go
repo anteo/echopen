@@ -17,8 +17,6 @@ type GroupWrapper struct {
 	Group                *echo.Group
 }
 
-type GroupConfigFunc func(*GroupWrapper) *GroupWrapper
-
 func (g *GroupWrapper) Add(method string, path string, handler echo.HandlerFunc, config ...RouteConfigFunc) *RouteWrapper {
 	// Construct a new operation for this path and method
 	op := &v310.Operation{}
@@ -72,7 +70,9 @@ func (g *GroupWrapper) Add(method string, path string, handler echo.HandlerFunc,
 	wrapper = WithTags(g.Tags...)(wrapper)
 
 	for _, req := range g.SecurityRequirements {
-		wrapper = WithSecurityRequirement(req)(wrapper)
+		for name, scopes := range *req {
+			wrapper = WithSecurityRequirement(name, scopes)(wrapper)
+		}
 	}
 
 	// Apply config transforms
@@ -126,25 +126,4 @@ func (g *GroupWrapper) PUT(path string, handler echo.HandlerFunc, config ...Rout
 
 func (g *GroupWrapper) TRACE(path string, handler echo.HandlerFunc, config ...RouteConfigFunc) *RouteWrapper {
 	return g.Add("TRACE", path, handler, config...)
-}
-
-func WithEchoGroupMiddlewares(m ...echo.MiddlewareFunc) GroupConfigFunc {
-	return func(gw *GroupWrapper) *GroupWrapper {
-		gw.Middlewares = append(gw.Middlewares, m...)
-		return gw
-	}
-}
-
-func WithGroupTags(tags ...string) GroupConfigFunc {
-	return func(gw *GroupWrapper) *GroupWrapper {
-		gw.Tags = append(gw.Tags, tags...)
-		return gw
-	}
-}
-
-func WithGroupSecurityRequirement(req *v310.SecurityRequirement) GroupConfigFunc {
-	return func(gw *GroupWrapper) *GroupWrapper {
-		gw.SecurityRequirements = append(gw.SecurityRequirements, req)
-		return gw
-	}
 }

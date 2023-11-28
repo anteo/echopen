@@ -11,6 +11,10 @@ import (
 
 const Description = `Demonstration of routes with security requirements`
 
+type ErrorResponseBody struct {
+	Message string `json:"message"`
+}
+
 func main() {
 	// Create a new echOpen wrapper
 	api := echopen.New(
@@ -19,6 +23,15 @@ func main() {
 		echopen.WithSchemaDescription(Description),
 		echopen.WithSchemaLicense(&v310.License{Name: "MIT", URL: "https://example.com/license"}),
 	)
+
+	api.Schema.GetComponents().AddResponse("ErrorResponse", &v310.Response{
+		Description: echopen.PtrTo("Error response"),
+		Content: map[string]*v310.MediaTypeObject{
+			echo.MIMEApplicationJSON: {
+				Schema: api.ToSchemaRef(ErrorResponseBody{}),
+			},
+		},
+	})
 
 	api.Schema.GetComponents().AddSecurityScheme("api_key", &v310.SecurityScheme{
 		Type: v310.APIKeySecuritySchemeType,
@@ -31,16 +44,18 @@ func main() {
 		"/hello",
 		hello,
 		echopen.WithOptionalSecurity(),
-		echopen.WithSecurityRequirement(&v310.SecurityRequirement{"api_key": []string{}}),
-		echopen.WithResponseBody(fmt.Sprint(http.StatusOK), "Default response", ""),
+		echopen.WithSecurityRequirement("api_key", []string{}),
+		echopen.WithResponse(fmt.Sprint(http.StatusOK), "Successful response"),
+		echopen.WithResponseRef("default", "ErrorResponse"),
 	)
 
 	// Secured route
 	api.GET(
 		"/hello_secure",
-		hello,
-		echopen.WithSecurityRequirement(&v310.SecurityRequirement{"api_key": []string{}}),
-		echopen.WithResponseBody(fmt.Sprint(http.StatusOK), "Default response", ""),
+		helloSecure,
+		echopen.WithSecurityRequirement("api_key", []string{}),
+		echopen.WithResponse(fmt.Sprint(http.StatusOK), "Successful response"),
+		echopen.WithResponseRef("default", "ErrorResponse"),
 	)
 
 	// Serve the generated schema
@@ -52,5 +67,15 @@ func main() {
 }
 
 func hello(c echo.Context) error {
-	return c.String(http.StatusOK, "Hello, World!")
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"value":  c.Get("security.api_key"),
+		"scopes": c.Get("security.api_key.scopes"),
+	})
+}
+
+func helloSecure(c echo.Context) error {
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"value":  c.Get("security.api_key"),
+		"scopes": c.Get("security.api_key.scopes"),
+	})
 }
