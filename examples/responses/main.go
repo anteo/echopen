@@ -17,32 +17,9 @@ func main() {
 		echopen.WithSchemaTag(&v310.Tag{Name: "pets", Description: "Pets endpoints"}),
 	)
 
-	api.Schema.GetComponents().AddResponse("UnexpectedErrorResponse", &v310.Response{
-		Description: echopen.PtrTo("unexpected error"),
-		Content: map[string]*v310.MediaTypeObject{
-			"application/json": {
-				Schema: api.ToSchemaRef(Error{}),
-			},
-		},
-	})
-
-	api.Schema.GetComponents().AddResponse("NotFoundResponse", &v310.Response{
-		Description: echopen.PtrTo("not found"),
-		Content: map[string]*v310.MediaTypeObject{
-			"application/json": {
-				Schema: api.ToSchemaRef(Error{}),
-			},
-		},
-	})
-
-	api.Schema.GetComponents().AddResponse("PetResponse", &v310.Response{
-		Description: echopen.PtrTo("pet response"),
-		Content: map[string]*v310.MediaTypeObject{
-			"application/json": {
-				Schema: api.ToSchemaRef(Pet{}),
-			},
-		},
-	})
+	api.Schema.GetComponents().AddJSONResponse("UnexpectedErrorResponse", "unexpected error", api.ToSchemaRef(Error{}))
+	api.Schema.GetComponents().AddJSONResponse("NotFoundResponse", "not found", api.ToSchemaRef(Error{}))
+	api.Schema.GetComponents().AddJSONResponse("PetResponse", "pet response", api.ToSchemaRef(Pet{}))
 
 	api.GET(
 		"/pets",

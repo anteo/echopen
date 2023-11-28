@@ -9,8 +9,6 @@ import (
 	v310 "github.com/richjyoung/echopen/openapi/v3.1.0"
 )
 
-const Description = `Demonstration of routes with security requirements`
-
 type ErrorResponseBody struct {
 	Message string `json:"message"`
 }
@@ -20,18 +18,11 @@ func main() {
 	api := echopen.New(
 		"Hello World",
 		"1.0.0",
-		echopen.WithSchemaDescription(Description),
+		echopen.WithSchemaDescription("Demonstration of routes with security requirements"),
 		echopen.WithSchemaLicense(&v310.License{Name: "MIT", URL: "https://example.com/license"}),
 	)
 
-	api.Schema.GetComponents().AddResponse("ErrorResponse", &v310.Response{
-		Description: echopen.PtrTo("Error response"),
-		Content: map[string]*v310.MediaTypeObject{
-			echo.MIMEApplicationJSON: {
-				Schema: api.ToSchemaRef(ErrorResponseBody{}),
-			},
-		},
-	})
+	api.Schema.GetComponents().AddJSONResponse("ErrorResponse", "Error response", api.ToSchemaRef(ErrorResponseBody{}))
 
 	api.Schema.GetComponents().AddSecurityScheme("api_key", &v310.SecurityScheme{
 		Type: v310.APIKeySecuritySchemeType,

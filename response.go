@@ -10,6 +10,10 @@ import (
 
 func WithResponseRef(code string, name string) RouteConfigFunc {
 	return func(rw *RouteWrapper) *RouteWrapper {
+		resp := rw.API.Schema.GetComponents().GetResponse(name)
+		if resp == nil {
+			panic("echopen: response not registered")
+		}
 		rw.Operation.AddResponseRef(code, fmt.Sprintf("#/components/responses/%s", name))
 		return rw
 	}
@@ -18,7 +22,7 @@ func WithResponseRef(code string, name string) RouteConfigFunc {
 func WithResponse(code string, description string) RouteConfigFunc {
 	return func(rw *RouteWrapper) *RouteWrapper {
 		rw.Operation.AddResponse(code, &v310.Response{
-			Description: &description,
+			Description: description,
 		})
 
 		return rw
@@ -36,7 +40,7 @@ func WithResponseBody(code string, description string, target interface{}) Route
 
 	return func(rw *RouteWrapper) *RouteWrapper {
 		rw.Operation.AddResponse(code, &v310.Response{
-			Description: &description,
+			Description: description,
 			Content: map[string]*v310.MediaTypeObject{
 				mime: {Schema: rw.API.ToSchemaRef(target)},
 			},
@@ -49,7 +53,7 @@ func WithResponseBody(code string, description string, target interface{}) Route
 func WithResponseFile(code string, description string, mime string) RouteConfigFunc {
 	return func(rw *RouteWrapper) *RouteWrapper {
 		rw.Operation.AddResponse(code, &v310.Response{
-			Description: &description,
+			Description: description,
 			Content: map[string]*v310.MediaTypeObject{
 				mime: {Schema: &v310.Ref[v310.Schema]{
 					Value: &v310.Schema{
