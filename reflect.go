@@ -31,9 +31,9 @@ func (w *APIWrapper) TypeToSchemaRef(typ reflect.Type) *v310.Ref[v310.Schema] {
 		name := typ.Name()
 		if name != "" {
 			// Named structs can be stored in the Schema library and referenced multiple times
-			if w.Schema.GetComponents().GetSchema(name) == nil {
+			if w.Spec.GetComponents().GetSchema(name) == nil {
 				// First time this struct name has been seen, add to schemas
-				w.Schema.GetComponents().AddSchema(name, w.TypeToSchema(typ))
+				w.Spec.GetComponents().AddSchema(name, w.TypeToSchema(typ))
 			}
 
 			// Return a reference to the schema component

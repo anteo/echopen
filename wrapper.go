@@ -13,18 +13,18 @@ import (
 )
 
 type APIWrapper struct {
-	Schema *v310.Specification
+	Spec   *v310.Specification
 	Engine *echo.Echo
 }
 
 func New(title string, apiVersion string, config ...WrapperConfigFunc) *APIWrapper {
 	wrapper := &APIWrapper{
-		Schema: v310.NewSpecification(),
+		Spec:   v310.NewSpecification(),
 		Engine: echo.New(),
 	}
 
-	wrapper.Schema.Info.Title = title
-	wrapper.Schema.Info.Version = apiVersion
+	wrapper.Spec.Info.Title = title
+	wrapper.Spec.Info.Version = apiVersion
 	wrapper.Engine.HTTPErrorHandler = DefaultErrorHandler
 
 	for _, configFunc := range config {
@@ -35,10 +35,10 @@ func New(title string, apiVersion string, config ...WrapperConfigFunc) *APIWrapp
 }
 
 func (w *APIWrapper) ServeYAMLSpec(path string, filters ...SpecFilterFunc) *echo.Route {
-	s := w.Schema
+	s := w.Spec
 
 	if len(filters) > 0 {
-		s = w.Schema.Copy()
+		s = w.Spec.Copy()
 		for _, f := range filters {
 			s = f(s)
 		}
@@ -58,10 +58,10 @@ func (w *APIWrapper) ServeYAMLSpec(path string, filters ...SpecFilterFunc) *echo
 }
 
 func (w *APIWrapper) ServeJSONSpec(path string, filters ...SpecFilterFunc) *echo.Route {
-	s := w.Schema
+	s := w.Spec
 
 	if len(filters) > 0 {
-		s = w.Schema.Copy()
+		s = w.Spec.Copy()
 		for _, f := range filters {
 			s = f(s)
 		}
@@ -114,7 +114,7 @@ func (w *APIWrapper) ServeUI(path string, schemaPath string, uiVersion string) *
 					</script>
 				</body>
 			</html>
-		`, w.Schema.Info.Title, schemaPath, uiVersion))
+		`, w.Spec.Info.Title, schemaPath, uiVersion))
 	})
 }
 
@@ -123,11 +123,11 @@ func (w *APIWrapper) Start(addr string) error {
 }
 
 func (w *APIWrapper) Licence(lic *v310.License) {
-	w.Schema.Info.License = lic
+	w.Spec.Info.License = lic
 }
 
 func (w *APIWrapper) Contact(c *v310.Contact) {
-	w.Schema.Info.Contact = c
+	w.Spec.Info.Contact = c
 }
 
 func (w *APIWrapper) Add(method string, path string, handler echo.HandlerFunc, config ...RouteConfigFunc) *RouteWrapper {
@@ -138,10 +138,10 @@ func (w *APIWrapper) Add(method string, path string, handler echo.HandlerFunc, c
 	oapiPath := echoRouteToOpenAPI(path)
 
 	// Get the PathItem for this route
-	pathItemRef, ok := w.Schema.Paths[oapiPath]
+	pathItemRef, ok := w.Spec.Paths[oapiPath]
 	if !ok {
 		pathItemRef = &v310.Ref[v310.PathItem]{Value: &v310.PathItem{}}
-		w.Schema.Paths[oapiPath] = pathItemRef
+		w.Spec.Paths[oapiPath] = pathItemRef
 	}
 	pathItem := pathItemRef.Value
 

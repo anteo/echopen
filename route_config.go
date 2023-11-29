@@ -20,7 +20,7 @@ func WithMiddlewares(m ...echo.MiddlewareFunc) RouteConfigFunc {
 func WithTags(tags ...string) RouteConfigFunc {
 	return func(rw *RouteWrapper) *RouteWrapper {
 		for _, tag := range tags {
-			if rw.API.Schema.GetTagByName(tag) == nil {
+			if rw.API.Spec.GetTagByName(tag) == nil {
 				panic(fmt.Sprintf("echopen: tag '%s' not registered", tag))
 			}
 		}
@@ -44,13 +44,6 @@ func WithDescription(desc string) RouteConfigFunc {
 	}
 }
 
-func WithParameter(param *v310.Parameter) RouteConfigFunc {
-	return func(rw *RouteWrapper) *RouteWrapper {
-		rw.Operation.AddParameter(param)
-		return rw
-	}
-}
-
 func WithOptionalSecurity() RouteConfigFunc {
 	return func(rw *RouteWrapper) *RouteWrapper {
 		rw.Operation.AddSecurityRequirement(&v310.SecurityRequirement{})
@@ -63,7 +56,7 @@ func WithOptionalSecurity() RouteConfigFunc {
 func WithSecurityRequirement(name string, scopes []string) RouteConfigFunc {
 	return func(rw *RouteWrapper) *RouteWrapper {
 		// Lookup the matching scheme
-		scheme := rw.API.Schema.GetComponents().GetSecurityScheme(name)
+		scheme := rw.API.Spec.GetComponents().GetSecurityScheme(name)
 		if scheme == nil {
 			panic("echopen: security scheme not registered")
 		}

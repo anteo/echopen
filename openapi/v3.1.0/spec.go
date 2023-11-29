@@ -11,12 +11,12 @@ type Specification struct {
 	JSONSchemaDialect string                    `json:"jsonSchemaDialect,omitempty" yaml:"jsonSchemaDialect,omitempty"`
 	Info              Info                      `json:"info" yaml:"info"`
 	Servers           []*Server                 `json:"servers,omitempty" yaml:"servers,omitempty"`
+	ExternalDocs      *ExternalDocs             `json:"externalDocs,omitempty" yaml:"externalDocs,omitempty"`
+	Tags              []*Tag                    `json:"tags,omitempty" yaml:"tags,omitempty"`
 	Paths             Paths                     `json:"paths,omitempty" yaml:"paths,omitempty"`
 	Webhooks          map[string]*Ref[PathItem] `json:"webhooks,omitempty" yaml:"webhooks,omitempty"`
 	Components        *Components               `json:"components,omitempty" yaml:"components,omitempty"`
 	Security          []*SecurityRequirement    `json:"security,omitempty" yaml:"security,omitempty"`
-	Tags              []*Tag                    `json:"tags,omitempty" yaml:"tags,omitempty"`
-	ExternalDocs      *ExternalDocs             `json:"externalDocs,omitempty" yaml:"externalDocs,omitempty"`
 }
 
 func NewSpecification() *Specification {

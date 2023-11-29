@@ -21,7 +21,7 @@ func main() {
 	api := echopen.New(
 		"Hello World",
 		"1.0.0",
-		echopen.WithSpecDescription("Very basic example with single route and schema."),
+		echopen.WithSpecDescription("Very basic example with single route and plain text response."),
 		echopen.WithSpecLicense(&v310.License{Name: "MIT", URL: "https://example.com/license"}),
 		echopen.WithSpecTag(&v310.Tag{Name: "hello_world", Description: "Hello World API Routes"}),
 	)
@@ -32,6 +32,7 @@ func main() {
 		hello,
 		echopen.WithTags("hello_world"),
 		echopen.WithResponseBody(fmt.Sprint(http.StatusOK), "Default response", ""),
+		echopen.WithResponse("default", "Unexpected error"),
 	)
 
 	// Serve the generated schema

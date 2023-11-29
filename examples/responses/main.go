@@ -17,9 +17,9 @@ func main() {
 		echopen.WithSpecTag(&v310.Tag{Name: "pets", Description: "Pets endpoints"}),
 	)
 
-	api.Schema.GetComponents().AddJSONResponse("UnexpectedErrorResponse", "unexpected error", api.ToSchemaRef(Error{}))
-	api.Schema.GetComponents().AddJSONResponse("NotFoundResponse", "not found", api.ToSchemaRef(Error{}))
-	api.Schema.GetComponents().AddJSONResponse("PetResponse", "pet response", api.ToSchemaRef(Pet{}))
+	api.Spec.GetComponents().AddJSONResponse("UnexpectedErrorResponse", "unexpected error", api.ToSchemaRef(Error{}))
+	api.Spec.GetComponents().AddJSONResponse("NotFoundResponse", "not found", api.ToSchemaRef(Error{}))
+	api.Spec.GetComponents().AddJSONResponse("PetResponse", "pet response", api.ToSchemaRef(Pet{}))
 
 	api.GET(
 		"/pets",

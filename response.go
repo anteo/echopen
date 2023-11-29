@@ -10,7 +10,7 @@ import (
 
 func WithResponseRef(code string, name string) RouteConfigFunc {
 	return func(rw *RouteWrapper) *RouteWrapper {
-		resp := rw.API.Schema.GetComponents().GetResponse(name)
+		resp := rw.API.Spec.GetComponents().GetResponse(name)
 		if resp == nil {
 			panic("echopen: response not registered")
 		}

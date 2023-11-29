@@ -13,42 +13,42 @@ type WrapperConfigFunc func(*APIWrapper) *APIWrapper
 
 func WithSpecDescription(desc string) WrapperConfigFunc {
 	return func(a *APIWrapper) *APIWrapper {
-		a.Schema.Info.Description = strings.TrimSpace(desc)
+		a.Spec.Info.Description = strings.TrimSpace(desc)
 		return a
 	}
 }
 
 func WithSpecTermsOfService(tos string) WrapperConfigFunc {
 	return func(a *APIWrapper) *APIWrapper {
-		a.Schema.Info.TermsOfService = tos
+		a.Spec.Info.TermsOfService = tos
 		return a
 	}
 }
 
 func WithSpecLicense(l *v310.License) WrapperConfigFunc {
 	return func(a *APIWrapper) *APIWrapper {
-		a.Schema.Info.License = l
+		a.Spec.Info.License = l
 		return a
 	}
 }
 
 func WithSpecTag(t *v310.Tag) WrapperConfigFunc {
 	return func(a *APIWrapper) *APIWrapper {
-		a.Schema.AddTag(t)
+		a.Spec.AddTag(t)
 		return a
 	}
 }
 
 func WithSpecContact(c *v310.Contact) WrapperConfigFunc {
 	return func(a *APIWrapper) *APIWrapper {
-		a.Schema.Info.Contact = c
+		a.Spec.Info.Contact = c
 		return a
 	}
 }
 
 func WithSpecServer(s *v310.Server) WrapperConfigFunc {
 	return func(a *APIWrapper) *APIWrapper {
-		a.Schema.AddServer(s)
+		a.Spec.AddServer(s)
 		return a
 	}
 }

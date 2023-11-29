@@ -22,9 +22,9 @@ func main() {
 		echopen.WithSpecLicense(&v310.License{Name: "MIT", URL: "https://example.com/license"}),
 	)
 
-	api.Schema.GetComponents().AddJSONResponse("ErrorResponse", "Error response", api.ToSchemaRef(ErrorResponseBody{}))
+	api.Spec.GetComponents().AddJSONResponse("ErrorResponse", "Error response", api.ToSchemaRef(ErrorResponseBody{}))
 
-	api.Schema.GetComponents().AddSecurityScheme("api_key", &v310.SecurityScheme{
+	api.Spec.GetComponents().AddSecurityScheme("api_key", &v310.SecurityScheme{
 		Type: v310.APIKeySecuritySchemeType,
 		In:   "header",
 		Name: "X-API-Key",

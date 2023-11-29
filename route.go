@@ -34,7 +34,7 @@ func (r *RouteWrapper) validationMiddleware() echo.MiddlewareFunc {
 					securityReqsMet = true
 				} else {
 					for name, scopes := range *req {
-						scheme := r.API.Schema.GetComponents().GetSecurityScheme(name)
+						scheme := r.API.Spec.GetComponents().GetSecurityScheme(name)
 						if scheme == nil {
 							// Scheme existence is checked at the point the requirement is added
 							continue

@@ -15,13 +15,30 @@ type PathParameter struct {
 	Schema      *v310.Schema
 }
 
+type QueryParameter struct {
+	Name        string
+	Description string
+	ContextKey  string
+	Required    bool
+	Style       string
+	Explode     bool
+	Schema      *v310.Schema
+}
+
+func WithParameter(param *v310.Parameter) RouteConfigFunc {
+	return func(rw *RouteWrapper) *RouteWrapper {
+		rw.Operation.AddParameter(param)
+		return rw
+	}
+}
+
 func WithPathParameter(param *PathParameter) RouteConfigFunc {
 	return func(rw *RouteWrapper) *RouteWrapper {
 		rw.Middlewares = append(rw.Middlewares, func(next echo.HandlerFunc) echo.HandlerFunc {
 			return func(c echo.Context) error {
 				p := c.Param(param.Name)
 				if param.ContextKey == "" {
-					param.ContextKey = fmt.Sprintf("param.%s", param.Name)
+					param.ContextKey = fmt.Sprintf("path.%s", param.Name)
 				}
 				c.Set(param.ContextKey, p)
 				return next(c)
@@ -58,7 +75,7 @@ func WithPathStruct(target interface{}) RouteConfigFunc {
 					return err
 				}
 
-				c.Set("param", v)
+				c.Set("path", v)
 
 				return next(c)
 			}
@@ -75,6 +92,33 @@ func WithPathStruct(target interface{}) RouteConfigFunc {
 				Schema:      rw.API.TypeToSchema(f.Type),
 			})
 		}
+
+		return rw
+	}
+}
+
+func WithQueryParameter(param *QueryParameter) RouteConfigFunc {
+	return func(rw *RouteWrapper) *RouteWrapper {
+		rw.Middlewares = append(rw.Middlewares, func(next echo.HandlerFunc) echo.HandlerFunc {
+			return func(c echo.Context) error {
+				p := c.QueryParam(param.Name)
+				if param.ContextKey == "" {
+					param.ContextKey = fmt.Sprintf("query.%s", param.Name)
+				}
+				c.Set(param.ContextKey, p)
+				return next(c)
+			}
+		})
+
+		rw.Operation.AddParameter(&v310.Parameter{
+			Name:        param.Name,
+			In:          "query",
+			Description: param.Description,
+			Schema:      param.Schema,
+			Required:    param.Required,
+			Explode:     param.Explode,
+			Style:       param.Style,
+		})
 
 		return rw
 	}

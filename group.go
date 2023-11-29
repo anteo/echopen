@@ -28,10 +28,10 @@ func (g *GroupWrapper) Add(method string, path string, handler echo.HandlerFunc,
 	oapiPath := echoRouteToOpenAPI(fullPath)
 
 	// Get the PathItem for this route
-	pathItemRef, ok := g.API.Schema.Paths[oapiPath]
+	pathItemRef, ok := g.API.Spec.Paths[oapiPath]
 	if !ok {
 		pathItemRef = &v310.Ref[v310.PathItem]{Value: &v310.PathItem{}}
-		g.API.Schema.Paths[oapiPath] = pathItemRef
+		g.API.Spec.Paths[oapiPath] = pathItemRef
 	}
 	pathItem := pathItemRef.Value
 
