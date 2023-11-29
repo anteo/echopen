@@ -92,7 +92,7 @@ Sed tempus felis lobortis leo pulvinar rutrum. Nam mattis velit nisl, eu condime
 	api.WriteYAMLSpec("openapi_out.yml")
 
 	// Start the server
-	api.Start("localhost:3030")
+	api.Start("localhost:3000")
 }
 
 func findPets(c echo.Context) error {

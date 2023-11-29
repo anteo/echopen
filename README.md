@@ -46,12 +46,12 @@ api.GET(
   hello,
   echopen.WithTags("hello_world"),
   echopen.WithResponseBody(fmt.Sprint(http.StatusOK), "Default response", ""),
-  echopen.WithResponse()
+  echopen.WithResponseDescription("default", "Unexpected error"),
 )
 
 // Serve the generated schema
 api.ServeYAMLSpec("/openapi.yml")
-api.ServeJSONSpec("/openapi.yml")
+api.ServeJSONSpec("/openapi.json")
 api.ServeUI("/", "/openapi.yml", "5.10.3")
 
 // Start the server

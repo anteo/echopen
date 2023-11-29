@@ -20,5 +20,5 @@ func main() {
 	api.WriteYAMLSpec("openapi_out.yml")
 
 	// Start the server
-	api.Start("localhost:3030")
+	api.Start("localhost:3000")
 }
