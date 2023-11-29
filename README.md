@@ -26,31 +26,31 @@ Interactions with each wrapper will automatically trigger the corresponding chan
 ## Getting Started
 
 ```go
-	// Create a new echOpen wrapper
-	api := echopen.New(
-		"Hello World",
-		"1.0.0",
-		echopen.WithSpecDescription("Very basic example with single route and plain text response."),
-		echopen.WithSpecLicense(&v310.License{Name: "MIT", URL: "https://opensource.org/license/mit/"}),
-		echopen.WithSpecTag(&v310.Tag{Name: "hello_world", Description: "Hello World API Routes"}),
-	)
+// Create a new echOpen wrapper
+api := echopen.New(
+  "Hello World",
+  "1.0.0",
+  echopen.WithSpecDescription("Very basic example with single route and plain text response."),
+  echopen.WithSpecLicense(&v310.License{Name: "MIT", URL: "https://opensource.org/license/mit/"}),
+  echopen.WithSpecTag(&v310.Tag{Name: "hello_world", Description: "Hello World API Routes"}),
+)
 
-	// Hello World route
-	api.GET(
-		"/hello",
-		hello,
-		echopen.WithTags("hello_world"),
-		echopen.WithResponseBody(fmt.Sprint(http.StatusOK), "Default response", ""),
-    echopen.WithResponse()
-	)
+// Hello World route
+api.GET(
+  "/hello",
+  hello,
+  echopen.WithTags("hello_world"),
+  echopen.WithResponseBody(fmt.Sprint(http.StatusOK), "Default response", ""),
+  echopen.WithResponse()
+)
 
-	// Serve the generated schema
-	api.ServeYAMLSpec("/openapi.yml")
-	api.ServeJSONSpec("/openapi.yml")
-	api.ServeUI("/", "/openapi.yml", "5.10.3")
+// Serve the generated schema
+api.ServeYAMLSpec("/openapi.yml")
+api.ServeJSONSpec("/openapi.yml")
+api.ServeUI("/", "/openapi.yml", "5.10.3")
 
-	// Start the server
-	api.Start("localhost:3000")
+// Start the server
+api.Start("localhost:3000")
 ```
 
 This results in the following generated specification:
