@@ -1,7 +1,8 @@
-package test
+package echopen_test
 
 import (
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -10,6 +11,13 @@ import (
 	"github.com/richjyoung/echopen"
 	"github.com/stretchr/testify/assert"
 )
+
+func executeRequest(api *echopen.APIWrapper, method string, target string, body io.Reader) (*http.Request, *httptest.ResponseRecorder) {
+	req := httptest.NewRequest(method, target, body)
+	res := httptest.NewRecorder()
+	api.Engine.ServeHTTP(res, req)
+	return req, res
+}
 
 func TestMinimal(t *testing.T) {
 	api := echopen.New(
@@ -21,9 +29,7 @@ func TestMinimal(t *testing.T) {
 	// Serve the generated schema
 	api.ServeYAMLSpec("/openapi.yml")
 
-	req := httptest.NewRequest(http.MethodGet, "/openapi.yml", nil)
-	res := httptest.NewRecorder()
-	api.Engine.ServeHTTP(res, req)
+	_, res := executeRequest(api, http.MethodGet, "/openapi.yml", nil)
 
 	assert.Equal(t, 200, res.Result().StatusCode)
 	assert.Contains(t, res.Header()["Content-Type"], "application/yaml")
@@ -34,10 +40,7 @@ func TestMinimal(t *testing.T) {
 
 func TestNotFound(t *testing.T) {
 	api := echopen.New("Test", "1.0.0")
-
-	req := httptest.NewRequest(http.MethodGet, "/", nil)
-	res := httptest.NewRecorder()
-	api.Engine.ServeHTTP(res, req)
+	_, res := executeRequest(api, http.MethodGet, "/", nil)
 
 	assert.Equal(t, 404, res.Result().StatusCode)
 	assert.Contains(t, res.Body.String(), `{"message":"Not Found"}`)
@@ -50,9 +53,7 @@ func TestRouteErrorDebug(t *testing.T) {
 		return echo.NewHTTPError(500).WithInternal(fmt.Errorf("test error"))
 	})
 
-	req := httptest.NewRequest(http.MethodGet, "/", nil)
-	res := httptest.NewRecorder()
-	api.Engine.ServeHTTP(res, req)
+	_, res := executeRequest(api, http.MethodGet, "/", nil)
 
 	assert.Equal(t, 500, res.Result().StatusCode)
 	assert.Contains(t, res.Body.String(), "test error")

@@ -222,10 +222,6 @@ func (w *APIWrapper) Group(prefix string, config ...GroupConfigFunc) *GroupWrapp
 	return wrapper
 }
 
-func (w *APIWrapper) CONNECT(path string, handler echo.HandlerFunc, config ...RouteConfigFunc) *RouteWrapper {
-	return w.Add("CONNECT", path, handler, config...)
-}
-
 func (w *APIWrapper) DELETE(path string, handler echo.HandlerFunc, config ...RouteConfigFunc) *RouteWrapper {
 	return w.Add("DELETE", path, handler, config...)
 }

@@ -92,10 +92,6 @@ func (g *GroupWrapper) Add(method string, path string, handler echo.HandlerFunc,
 	return wrapper
 }
 
-func (g *GroupWrapper) CONNECT(path string, handler echo.HandlerFunc, config ...RouteConfigFunc) *RouteWrapper {
-	return g.Add("CONNECT", path, handler, config...)
-}
-
 func (g *GroupWrapper) DELETE(path string, handler echo.HandlerFunc, config ...RouteConfigFunc) *RouteWrapper {
 	return g.Add("DELETE", path, handler, config...)
 }
