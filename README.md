@@ -23,7 +23,7 @@ Interactions with each wrapper will automatically trigger the corresponding chan
 - Binding of path, query, and request body.
 - Schema generation via reflection for request and response bodies.
 
-## Getting Started
+# Getting Started
 
 ```go
 // Create a new echOpen wrapper
@@ -88,7 +88,20 @@ paths:
 The call to `echopen.New()` creates a new wrapper around an echo engine and a v3.1.0 schema object.
 Whilst both of these can be interacted with directly, the libary contains a range of helper functions to simplify building APIs.
 
-## Routes
+# Examples
+
+- [Minimal](./examples/minimal/main.go) - Bare minimum to get a running server with spec and UI
+- [Hello World](./examples/hello_world/main.go) - Single route and plaintext response
+- [Petstore](./examples/petstore/main.go) - Reimplementation of the [Petstore Example Spec](./examples/petstore/petstore.yml)
+- [Params](./examples/params/main.go) - Query and Path parameter examples
+- [Responses](./examples/responses/main.go) - Reusable response components
+- [Security](./examples/security/main.go) - Routes with security requirements
+- [Tags](./examples/tags/main.go) - Operation tags and filtering of served specification files
+- [Validation](./examples/validation/main.go) - Validation of request body
+
+Each folder also contains the generated OpenAPI spec in `openapi_out.yml`.
+
+# Routes
 
 Adding routes is almost identical to working with the echo engine directly.
 
@@ -107,91 +120,133 @@ The returned `echo.Route` instance can be accessed from the RouteWrapper struct 
 Routes or middleware that do not appear in the spec can be added to the echo engine directly.
 The raw echo engine instance can be accessed from the APIWrapper struct `Engine` field.
 
-### WithMiddlewares Helper
+Convenience methods for `CONNECT`, `DELETE`, `GET`, `HEAD`, `OPTIONS`, `PATCH`, `POST`, `PUT`, and `TRACE` follow the same function signature as above, minus the method.
+
+## WithMiddlewares
 
 This config helper passes one or more middleware functions to the underlying echo `Add` function.
 The list of middleware is prepended with the route wrapper validation function, which ensures if security requirements are specified, at least one is fulfilled.
-This does not check the the security scheme has successfully authenticated the request, only that required values are passed in the correct part of the request for at least one security scheme, or `ErrSecurityReqsNotMet` is returned.
+This does not check the the security scheme has successfully authenticated the request, only that required values are passed in the correct part of the request for at least one security scheme, or `ErrSecurityRequirementsNotMet` is returned.
 
-### WithTags Helper
+## WithTags
 
 Adds a tag to the OpenAPI Operation object for this route with the given name.
 This tag must have been registered first using `WithSpecTag` or it will panic.
 
-### WithOperationID
+## WithOperationID
 
 Overrides the `operationId` field ot the OpenAPI Operation object with the given string.
 By default `operationId` is set to a sensible value by interpolating the path and method into a unique string.
 
-### WithDescription
+## WithDescription
 
 Sets the OpenAPI Operation description field, trimming any leading/trailing whitespace.
 
-### WithSecurityRequirement
+## WithSecurityRequirement
 
 Adds an OpenAPI Security Requirement object to the OpenAPI Operation.
 A Security Scheme of the same name must have been registered or it will panic.
 
-### WithOptionalSecurity
+## WithOptionalSecurity
 
 Adds an empty Security Requirement to the Operation.
 This allows the route validation middleware to treat all other Security Requirement as optional.
 
-### WithParameter
+# Route Groups
 
-Adds a custom Parameter entry to the Operation.
+Similar to Routes, adding Groups is meant to closely match working with the echo engine directly.
 
-### WithPathParameter
+```go
+// echo add group
+func (e *Echo) Group(prefix string, m ...MiddlewareFunc) (g *Group) {}
 
-Adds a Parameter entry with `in: path`.
-This adds a middleware function to extract the parameter into the echo context, either using the provided context key or default `path.<name>`.
-A schema can be specified, however the extracted value will always be a string.
+// echOpen equivalent
+func (w *APIWrapper) Group(prefix string, config ...GroupConfigFunc) *GroupWrapper {}
+```
 
-### WithPathStruct
+Middleware for the route group is added via the `WithGroupMiddlewares(m ...MiddlewareFunc)` helper.
+The returned `echo.Group` instance can be accessed from either the GroupWrapper or RouteWrapper structs `Group` field.
 
-Takes a struct with echo `param` tags and adds corresponding Parameter entries to the Operation object using reflection to build the schema.
-A pointer to a bound instance of a struct of the same type is added to the echo context under the context key `path`.
-This should only be called once per route.
+The same `Add` function for attaching routes to the group is provided on the GroupWrapper, and convenience methods for `CONNECT`, `DELETE`, `GET`, `HEAD`, `OPTIONS`, `PATCH`, `POST`, `PUT`, and `TRACE` follow the same function signature, minus the method.
 
-### WithQueryParameter
+## WithGroupMiddlewares
 
-Adds a Parameter entry with `in: query`.
-This adds a middleware function to extract the parameter into the echo context, either using the provided context key or default `query.<name>`.
-A schema can be specified, however the extracted value will always be a string.
+Provides a list of middlewares that will be passed to the underlying `echo.Group()` call.
 
-### WithQueryStruct
+## WithGroupTags
 
-Takes a struct with echo `form` tags and adds corresponding Parameter entries to the Operation object using reflection to build the schema.
-A pointer to a bound instance of a struct of the same type is added to the echo context under the context key `query`.
-This should only be called once per route.
+Calls WithTags for every route added to the group.
 
-## Route Groups
+## WithGroupSecurityRequirement
 
-## Parameters
+Calls WithSecurityRequirement for every route added to the group.
 
-### Path
+# Route Parameters
 
-### Query
+Parameters can be provided via query, header, path or cookies.
+All of these can be automatically extracted from the request and inserted into the request context, throwing `ErrRequiredParameterMissing` if the required flag is set and the parameter is not supplied.
 
-### Header
+| Location | RouteConfigFunc                               | Echo Context Key                    |
+| -------- | --------------------------------------------- | ----------------------------------- |
+| query    | `WithQueryParameter(*QueryParameterConfig)`   | `query.<name>` (string/[]string)\*  |
+| header   | `WithHeaderParameter(*HeaderParameterConfig)` | `header.<name>` (string/[]string)\* |
+| path     | `WithPathParameter(*PathParameterConfig)`     | `path.<name>` (string)              |
+| cookie   | `WithCookieParameter(*CookieParameterConfig)` | `cookie.<name>` (string)            |
 
-## Request Body
+(\* Depending on the value of config field `AllowMultiple`. If false, only the first value is used. )
 
-## Responses
+In the case of header parameters, the config `Name` field and corresponding default context key placeholder is converted to the [canonical header key](https://pkg.go.dev/net/http#CanonicalHeaderKey).
 
-### Composition
+Whilst the options struct allows for the schema to be specified, the value in the context will always be a string.
+The context key can be overridden using the `ContextKey` field in the config struct.
+Automatic type conversion or validation is not supported here.
 
-## Validation
+To specify custom parameters with no automatic binding, use `WithParameter`.
 
-## Security
+## Struct Binding
 
-### Adding Schemes
+Query, header, and path parameters can also be bound to a single struct with type conversion, which also allows schema extraction via reflection and validation.
 
-### Specifying Requirements
+| Location | RouteConfigFunc                        | Echo Context Key |
+| -------- | -------------------------------------- | ---------------- |
+| query    | `WithQueryStruct(target interface{})`  | `query`          |
+| header   | `WithHeaderStruct(target interface{})` | `header`         |
+| path     | `WithPathStruct(target interface{})`   | `path`           |
 
-## Component Reuse
+As this can only be used once per route, the context key cannot be overridden.
+The bound value stored in the context will be a pointer to a struct of the same type as the `target` argument.
 
-## Known issues
+For example:
+
+```go
+type QueryStruct struct { ... }
+
+api.GET("/", handler, echopen.WithQueryStruct(QueryStruct{}))
+
+func handler(c *echo.Context) error {
+  query := c.Get("query").(*QueryStruct{})
+  ...
+}
+```
+
+# Responses
+
+## Composition
+
+# Validation
+
+# Security
+
+## Adding Schemes
+
+## Specifying Requirements
+
+# Component Reuse
+
+By default, any schema generated via reflection from a named struct is registered under the spec `#/components/schemas` map.
+This cuts down on duplication, however care must be taken to ensure structs with the same name are identical, as the content is not checked.
+
+# Known issues
 
 - Response bodies are not type constrained. It's up to the handler to return the correct structs regardless of the hints provided in the route config.
 - Only application/json is supported for reflected schema generation

@@ -9,10 +9,10 @@ import (
 	v310 "github.com/richjyoung/echopen/openapi/v3.1.0"
 )
 
-// WithRequestBody extracts type information from a provided struct to populate the OpenAPI requestBody.
+// WithRequestBodyStruct extracts type information from a provided struct to populate the OpenAPI requestBody.
 // A bound struct of the same type is added to the context under the key "body" during each request.
 // Only application/json is supported.
-func WithRequestBody(description string, target interface{}) RouteConfigFunc {
+func WithRequestBodyStruct(description string, target interface{}) RouteConfigFunc {
 	t := reflect.TypeOf(target)
 	if t.Kind() != reflect.Struct {
 		panic(fmt.Errorf("echopen: struct expected, received %s", t.Kind()))
@@ -21,20 +21,22 @@ func WithRequestBody(description string, target interface{}) RouteConfigFunc {
 	return func(rw *RouteWrapper) *RouteWrapper {
 		rw.Middlewares = append(rw.Middlewares, func(next echo.HandlerFunc) echo.HandlerFunc {
 			val := validator.New(validator.WithRequiredStructEnabled())
+
 			return func(c echo.Context) error {
+				// Create a new struct of the given type
 				v := reflect.New(t).Interface()
-				err := (&echo.DefaultBinder{}).BindBody(c, v)
 
-				if err != nil {
+				// Bind the struct to the body
+				if err := (&echo.DefaultBinder{}).BindBody(c, v); err != nil {
 					return err
 				}
 
-				err = val.StructCtx(c.Request().Context(), v)
-
-				if err != nil {
+				// Validate the bound struct
+				if err := val.StructCtx(c.Request().Context(), v); err != nil {
 					return err
 				}
 
+				// Add to context
 				c.Set("body", v)
 
 				return next(c)

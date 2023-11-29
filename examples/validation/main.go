@@ -37,13 +37,13 @@ func main() {
 	)
 
 	// Add a global error handler to catch validation errors
-	api.ErrorHandler(onError)
+	api.SetErrorHandler(onError)
 
 	// Validate body route
 	api.POST(
 		"/validate",
 		validate,
-		echopen.WithRequestBody("Request parameters", Request{}),
+		echopen.WithRequestBodyStruct("Request parameters", Request{}),
 		echopen.WithResponseBody(fmt.Sprint(http.StatusOK), "Successful response", Response{}),
 		echopen.WithResponseBody("default", "Error response", Error{}),
 	)
@@ -51,6 +51,9 @@ func main() {
 	// Serve the generated schema
 	api.ServeYAMLSpec("/openapi.yml")
 	api.ServeUI("/", "/openapi.yml", "5.10.3")
+
+	// Write the full generated spec
+	api.WriteYAMLSpec("openapi_out.yml")
 
 	// Start the server
 	api.Start("localhost:3030")

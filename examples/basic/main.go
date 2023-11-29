@@ -49,19 +49,22 @@ func main() {
 	// Add a group
 	helloGroup := api.Group("/hello", echopen.WithGroupTags("hello_world"))
 	helloGroup.GET("", hello)
-	helloGroup.GET("/:id", helloID, echopen.WithTags("param"), echopen.WithPathParameter(&echopen.PathParameter{
+	helloGroup.GET("/:id", helloID, echopen.WithTags("param"), echopen.WithPathParameter(&echopen.PathParameterConfig{
 		Name:        "id",
 		Description: "ID Parameter",
 	}))
 
 	helloGroup.GET("/query", helloQuery, echopen.WithQueryStruct(QueryParams{}))
-	helloGroup.PATCH("/body", helloBody, echopen.WithRequestBody("Body params", RequestBody{}))
-	helloGroup.PATCH("/body/settings", helloQuery, echopen.WithRequestBody("Body params", RequestBodySettings{}))
+	helloGroup.PATCH("/body", helloBody, echopen.WithRequestBodyStruct("Body params", RequestBody{}))
+	helloGroup.PATCH("/body/settings", helloQuery, echopen.WithRequestBodyStruct("Body params", RequestBodySettings{}))
 
 	// Serve the generated schema
 	api.ServeJSONSpec("/openapi.json")
 	api.ServeYAMLSpec("/openapi.yml")
 	api.ServeUI("/", "/openapi.yml", "5.10.3")
+
+	// Write the full generated spec
+	api.WriteYAMLSpec("openapi_out.yml")
 
 	// Start the server
 	api.Start("localhost:3030")

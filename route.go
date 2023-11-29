@@ -8,10 +8,6 @@ import (
 	v310 "github.com/richjyoung/echopen/openapi/v3.1.0"
 )
 
-var (
-	ErrSecurityReqsNotMet = fmt.Errorf("echopen: at least one required security scheme must be provided")
-)
-
 type RouteWrapper struct {
 	API         *APIWrapper
 	Group       *GroupWrapper
@@ -56,7 +52,7 @@ func (r *RouteWrapper) validationMiddleware() echo.MiddlewareFunc {
 			}
 
 			if !securityReqsMet {
-				return ErrSecurityReqsNotMet
+				return ErrSecurityRequirementsNotMet
 			}
 
 			return next(c)

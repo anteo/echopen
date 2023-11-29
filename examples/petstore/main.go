@@ -45,7 +45,7 @@ Sed tempus felis lobortis leo pulvinar rutrum. Nam mattis velit nisl, eu condime
 		addPet,
 		echopen.WithOperationID("addPet"),
 		echopen.WithDescription("Creates a new pet in the store. Duplicates are allowed"),
-		echopen.WithRequestBody("Pet to add to the store", NewPet{}),
+		echopen.WithRequestBodyStruct("Pet to add to the store", NewPet{}),
 		echopen.WithResponseBody(fmt.Sprint(http.StatusOK), "pet response", Pet{}),
 		echopen.WithResponseBody("default", "unexpected error", Error{}),
 	)
@@ -55,7 +55,7 @@ Sed tempus felis lobortis leo pulvinar rutrum. Nam mattis velit nisl, eu condime
 		findPetByID,
 		echopen.WithOperationID("findPetByID"),
 		echopen.WithDescription("Returns a user based on a single ID, if the user does not have access to the pet"),
-		echopen.WithPathParameter(&echopen.PathParameter{
+		echopen.WithPathParameter(&echopen.PathParameterConfig{
 			Name:        "id",
 			Description: "ID of pet to fetch",
 			Schema: &v310.Schema{
@@ -72,7 +72,7 @@ Sed tempus felis lobortis leo pulvinar rutrum. Nam mattis velit nisl, eu condime
 		deletePet,
 		echopen.WithOperationID("deletePet"),
 		echopen.WithDescription("deletes a single pet based on the ID supplied"),
-		echopen.WithPathParameter(&echopen.PathParameter{
+		echopen.WithPathParameter(&echopen.PathParameterConfig{
 			Name:        "id",
 			Description: "ID of pet to delete",
 			Schema: &v310.Schema{
@@ -87,6 +87,9 @@ Sed tempus felis lobortis leo pulvinar rutrum. Nam mattis velit nisl, eu condime
 	// Serve the generated schema
 	api.ServeYAMLSpec("/openapi.yml")
 	api.ServeUI("/", "/openapi.yml", "5.10.3")
+
+	// Write the full generated spec
+	api.WriteYAMLSpec("openapi_out.yml")
 
 	// Start the server
 	api.Start("localhost:3030")

@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"net/http"
-	"strconv"
 
 	"github.com/labstack/echo/v4"
 	"github.com/richjyoung/echopen"
@@ -18,7 +17,7 @@ Example including path and query parameters.
 `
 
 type PathParams struct {
-	ID string `param:"id" description:"ID Parameter"`
+	ID int `param:"id" description:"ID Parameter"`
 }
 
 type QueryParams struct {
@@ -60,23 +59,23 @@ func main() {
 	api.ServeYAMLSpec("/openapi.yml")
 	api.ServeUI("/", "/openapi.yml", "5.10.3")
 
+	// Write the full generated spec
+	api.WriteYAMLSpec("openapi_out.yml")
+
 	// Start the server
 	api.Start("localhost:3030")
 }
 
 func getParamsByID(c echo.Context) error {
-	id := c.Get("param.id").(string)
+	path := c.Get("path").(*PathParams)
 	qry := c.Get("query").(*QueryParams)
-	i, err := strconv.Atoi(id)
 
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, ErrorResponseBody{Code: "invalid_id"})
-	} else if i > 10 {
+	if path.ID > 10 {
 		return c.JSON(http.StatusNotFound, ErrorResponseBody{Code: "not_found"})
 	}
 
 	return c.JSON(http.StatusOK, ValidResponseBody{
-		ID:    i,
+		ID:    path.ID,
 		Notes: qry.Notes,
 	})
 }

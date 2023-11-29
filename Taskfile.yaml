@@ -1,0 +1,20 @@
+# https://taskfile.dev
+
+version: "3"
+
+tasks:
+  default:
+    desc: List all commands
+    cmds:
+      - task --list-all
+    silent: true
+
+  test:
+    desc: Run tests
+    cmds:
+      - go test -coverpkg ./... -coverprofile coverage.out ./...
+
+  cover:
+    desc: View coverage report
+    cmds:
+      - go tool cover -html coverage.out

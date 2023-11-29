@@ -1,8 +1,6 @@
 package echopen
 
 import (
-	"errors"
-	"net/http"
 	"strings"
 
 	"github.com/labstack/echo/v4"
@@ -11,23 +9,35 @@ import (
 
 type WrapperConfigFunc func(*APIWrapper) *APIWrapper
 
+func (a *APIWrapper) SetSpecDescription(desc string) {
+	a.Spec.Info.Description = strings.TrimSpace(desc)
+}
+
 func WithSpecDescription(desc string) WrapperConfigFunc {
 	return func(a *APIWrapper) *APIWrapper {
-		a.Spec.Info.Description = strings.TrimSpace(desc)
+		a.SetSpecDescription(desc)
 		return a
 	}
+}
+
+func (a *APIWrapper) SetTermsOfService(tos string) {
+	a.Spec.Info.TermsOfService = tos
 }
 
 func WithSpecTermsOfService(tos string) WrapperConfigFunc {
 	return func(a *APIWrapper) *APIWrapper {
-		a.Spec.Info.TermsOfService = tos
+		a.SetTermsOfService(tos)
 		return a
 	}
 }
 
+func (a *APIWrapper) SetSpecLicense(l *v310.License) {
+	a.Spec.Info.License = l
+}
+
 func WithSpecLicense(l *v310.License) WrapperConfigFunc {
 	return func(a *APIWrapper) *APIWrapper {
-		a.Spec.Info.License = l
+		a.SetSpecLicense(l)
 		return a
 	}
 }
@@ -39,9 +49,13 @@ func WithSpecTag(t *v310.Tag) WrapperConfigFunc {
 	}
 }
 
+func (a *APIWrapper) SetSpecContact(c *v310.Contact) {
+	a.Spec.Info.Contact = c
+}
+
 func WithSpecContact(c *v310.Contact) WrapperConfigFunc {
 	return func(a *APIWrapper) *APIWrapper {
-		a.Spec.Info.Contact = c
+		a.SetSpecContact(c)
 		return a
 	}
 }
@@ -53,20 +67,6 @@ func WithSpecServer(s *v310.Server) WrapperConfigFunc {
 	}
 }
 
-func DefaultErrorHandler(err error, c echo.Context) {
-	var err2 error
-
-	if errors.Is(err, ErrSecurityReqsNotMet) {
-		err2 = c.JSON(http.StatusUnauthorized, map[string]interface{}{
-			"message": http.StatusText(http.StatusUnauthorized),
-		})
-	} else {
-		err2 = c.JSON(http.StatusInternalServerError, map[string]interface{}{
-			"message": http.StatusText(http.StatusInternalServerError),
-		})
-	}
-
-	if err2 != nil {
-		panic(err2.Error())
-	}
+func (a *APIWrapper) SetErrorHandler(h echo.HTTPErrorHandler) {
+	a.Engine.HTTPErrorHandler = h
 }

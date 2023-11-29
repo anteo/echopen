@@ -16,6 +16,9 @@ func main() {
 	api.ServeYAMLSpec("/openapi.yml")
 	api.ServeUI("/", "/openapi.yml", "5.10.3")
 
+	// Write the full generated spec
+	api.WriteYAMLSpec("openapi_out.yml")
+
 	// Start the server
 	api.Start("localhost:3030")
 }
