@@ -36,7 +36,7 @@ func main() {
 		hello,
 		echopen.WithOptionalSecurity(),
 		echopen.WithSecurityRequirement("api_key", []string{}),
-		echopen.WithResponse(fmt.Sprint(http.StatusOK), "Successful response"),
+		echopen.WithResponseDescription(fmt.Sprint(http.StatusOK), "Successful response"),
 		echopen.WithResponseRef("default", "ErrorResponse"),
 	)
 
@@ -45,7 +45,7 @@ func main() {
 		"/hello_secure",
 		helloSecure,
 		echopen.WithSecurityRequirement("api_key", []string{}),
-		echopen.WithResponse(fmt.Sprint(http.StatusOK), "Successful response"),
+		echopen.WithResponseDescription(fmt.Sprint(http.StatusOK), "Successful response"),
 		echopen.WithResponseRef("default", "ErrorResponse"),
 	)
 

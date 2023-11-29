@@ -80,7 +80,7 @@ Sed tempus felis lobortis leo pulvinar rutrum. Nam mattis velit nisl, eu condime
 				Format: "int64",
 			},
 		}),
-		echopen.WithResponse(fmt.Sprint(http.StatusNoContent), "pet deleted"),
+		echopen.WithResponseDescription(fmt.Sprint(http.StatusNoContent), "pet deleted"),
 		echopen.WithResponseBody("default", "unexpected error", Error{}),
 	)
 

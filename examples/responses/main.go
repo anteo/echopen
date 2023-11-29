@@ -76,7 +76,7 @@ func main() {
 				Format: "int64",
 			},
 		}),
-		echopen.WithResponse(fmt.Sprint(http.StatusNoContent), "pet deleted"),
+		echopen.WithResponseDescription(fmt.Sprint(http.StatusNoContent), "pet deleted"),
 		echopen.WithResponseRef(fmt.Sprint(http.StatusNotFound), "NotFoundResponse"),
 		echopen.WithResponseRef("default", "UnexpectedErrorResponse"),
 	)

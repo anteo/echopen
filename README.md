@@ -17,6 +17,11 @@ Helper functions are available for all of these to customise each created object
 
 Interactions with each wrapper will automatically trigger the corresponding changes to the OpenAPI specification, and this can be directly modified as well both before the server is started, or on the fly when serving the spec to clients through the API.
 
+Certain objects in OpenAPI specs can either be a value or a reference to a value elsewhere in the specification.
+See [openapi/v3.1.0/ref.go](./openapi/v3.1.0/ref.go) for the `Ref[T any]` struct type.
+This uses generics, requiring Go 1.18+.
+echOpen is tested against the last three major Go versions.
+
 ## Features
 
 - Full access to both the underlying echo engine with support for groups, and the generated OpenAPI schema.
@@ -90,6 +95,9 @@ Whilst both of these can be interacted with directly, the libary contains a rang
 
 # Examples
 
+Several examples are provided which illustrate different usage of echOpen.
+Each one runs its own server and provides a spec browser to test the API.
+
 - [Minimal](./examples/minimal/main.go) - Bare minimum to get a running server with spec and UI
 - [Hello World](./examples/hello_world/main.go) - Single route and plaintext response
 - [Petstore](./examples/petstore/main.go) - Reimplementation of the [Petstore Example Spec](./examples/petstore/petstore.yml)
@@ -122,35 +130,14 @@ The raw echo engine instance can be accessed from the APIWrapper struct `Engine`
 
 Convenience methods for `CONNECT`, `DELETE`, `GET`, `HEAD`, `OPTIONS`, `PATCH`, `POST`, `PUT`, and `TRACE` follow the same function signature as above, minus the method.
 
-## WithMiddlewares
+## Configuration Functions
 
-This config helper passes one or more middleware functions to the underlying echo `Add` function.
-The list of middleware is prepended with the route wrapper validation function, which ensures if security requirements are specified, at least one is fulfilled.
-This does not check the the security scheme has successfully authenticated the request, only that required values are passed in the correct part of the request for at least one security scheme, or `ErrSecurityRequirementsNotMet` is returned.
-
-## WithTags
-
-Adds a tag to the OpenAPI Operation object for this route with the given name.
-This tag must have been registered first using `WithSpecTag` or it will panic.
-
-## WithOperationID
-
-Overrides the `operationId` field ot the OpenAPI Operation object with the given string.
-By default `operationId` is set to a sensible value by interpolating the path and method into a unique string.
-
-## WithDescription
-
-Sets the OpenAPI Operation description field, trimming any leading/trailing whitespace.
-
-## WithSecurityRequirement
-
-Adds an OpenAPI Security Requirement object to the OpenAPI Operation.
-A Security Scheme of the same name must have been registered or it will panic.
-
-## WithOptionalSecurity
-
-Adds an empty Security Requirement to the Operation.
-This allows the route validation middleware to treat all other Security Requirement as optional.
+- `WithOperationID` -Overrides the `operationId` field ot the OpenAPI Operation object with the given string. By default `operationId` is set to a sensible value by interpolating the path and method into a unique string.
+- `WithDescription` - Sets the OpenAPI Operation description field, trimming any leading/trailing whitespace.
+- `WithTags` - Adds a tag to the OpenAPI Operation object for this route with the given name. This tag must have been registered first using `WithSpecTag` or it will panic.
+- `WithMiddlewares` - Passes one or more middleware functions to the underlying echo `Add` function. See Security for more information.
+- `WithSecurityRequirement` - Adds an OpenAPI Security Requirement object to the OpenAPI Operation. A Security Scheme of the same name must have been registered or it will panic.
+- `WithOptionalSecurity`- Adds an empty Security Requirement to the Operation. This allows the route validation middleware to treat all other Security Requirement as optional.
 
 # Route Groups
 
@@ -169,17 +156,11 @@ The returned `echo.Group` instance can be accessed from either the GroupWrapper 
 
 The same `Add` function for attaching routes to the group is provided on the GroupWrapper, and convenience methods for `CONNECT`, `DELETE`, `GET`, `HEAD`, `OPTIONS`, `PATCH`, `POST`, `PUT`, and `TRACE` follow the same function signature, minus the method.
 
-## WithGroupMiddlewares
+## Configuration Functions
 
-Provides a list of middlewares that will be passed to the underlying `echo.Group()` call.
-
-## WithGroupTags
-
-Calls WithTags for every route added to the group.
-
-## WithGroupSecurityRequirement
-
-Calls WithSecurityRequirement for every route added to the group.
+- `WithGroupMiddlewares` - Provides a list of middlewares that will be passed to the underlying `echo.Group()` call.
+- `WithGroupTags` - Calls `WithTags` for every route added to the group.
+- `WithGroupSecurityRequirement` - Calls `WithSecurityRequirement` for every route added to the group.
 
 # Route Parameters
 
@@ -229,11 +210,79 @@ func handler(c *echo.Context) error {
 }
 ```
 
+Reflection also supports using `description` and `example` struct tags to populate the respective fields in the schema.
+
 # Responses
+
+Responses can take almost limitless forms in OpenAPI specs.
+Several helpers are provided to assist with common cases:
+
+- `WithResponse` - Adds a custom response object to the operation directly. Offers complete control but does not infer any properties from structs etc.
+- `WithResponseDescription` - Adds a response for a given code containing only a description. Common way of documenting just the existence of a code.
+- `WithResponseRef` - Adds a response ref for a registered named response object under the spec `#/components/responses` map. Panics if the name does not exist.
+- `WithResponseFile` - Binary response with a given MIME type.
+- `WithResponseBody` - MIME type and schema inferred from a provided target value. If this is a named struct, the schema is registered under the spec `#/components/schemas` map and used by reference in the response object. See Component Reuse.
+
+In all cases `code` is a string to allow the catch-all `default` case to be specified, e.g.
+
+```go
+echopen.WithResponseDescription("default", "Unexpected error"),
+```
 
 ## Composition
 
+Struct composition is supported and results in an `allOf` schema:
+
+```go
+type NewPet struct {
+	Name string `json:"name,omitempty"`
+	Tag  string `json:"tag,omitempty"`
+}
+
+type Pet struct {
+	ID int64 `json:"id,omitempty"`
+	NewPet
+}
+```
+
+This results in the following schema components:
+
+```yaml
+components:
+  schemas:
+    NewPet:
+      type: object
+      properties:
+        name:
+          type: string
+        tag:
+          type: string
+    Pet:
+      allOf:
+        - $ref: "#/components/schemas/NewPet"
+        - type: object
+          properties:
+            id:
+              type: integer
+              format: int64
+```
+
+These excerpts come from the [Petstore](./examples/petstore/main.go) example.
+
 # Validation
+
+Validation is supported, and assumes usage of [github.com/go-playground/validator/v10](https://pkg.go.dev/github.com/go-playground/validator/v10).
+The following validation tags are extracted and used to update the generated schema as follows:
+
+- `max`/`lte` - `MaxLength` (string) / `Maximum` (number/integer) / `MaxItems` (array)
+- `min`/`gte` - `MinLength` (string) / `Minimum` (number/integer) / `MinItems` (array)
+- `lt` - `ExclusiveMinimum` (number/integer)
+- `gt` - `ExclusiveMaximum` (number/integer)
+- `unique` - `UniqueItems` (array)
+
+Validation is performed on all Parameter structs (query/header/path) and Request Bodies.
+
+Validation is not performed on Responses, as the spec is not used to type constrain the route handler functions, and the potentially wide range of responses (both expected and unexpected "default" cases) makes this infeasible.
 
 # Security
 
@@ -245,9 +294,3 @@ func handler(c *echo.Context) error {
 
 By default, any schema generated via reflection from a named struct is registered under the spec `#/components/schemas` map.
 This cuts down on duplication, however care must be taken to ensure structs with the same name are identical, as the content is not checked.
-
-# Known issues
-
-- Response bodies are not type constrained. It's up to the handler to return the correct structs regardless of the hints provided in the route config.
-- Only application/json is supported for reflected schema generation
-- OpenAPI v3.1 only

@@ -32,7 +32,7 @@ func main() {
 		hello,
 		echopen.WithTags("hello_world"),
 		echopen.WithResponseBody(fmt.Sprint(http.StatusOK), "Default response", ""),
-		echopen.WithResponse("default", "Unexpected error"),
+		echopen.WithResponseDescription("default", "Unexpected error"),
 	)
 
 	// Serve the generated schema
