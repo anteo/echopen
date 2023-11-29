@@ -62,8 +62,8 @@ type PathItem struct {
 
 // 4.8.11 https://spec.openapis.org/oas/v3.1.0#external-documentation-object
 type ExternalDocs struct {
-	URL         string `json:"url" yaml:"url"`
 	Description string `json:"description,omitempty" yaml:"description,omitempty"`
+	URL         string `json:"url" yaml:"url"`
 }
 
 // 4.8.12 https://spec.openapis.org/oas/v3.1.0#parameter-object
@@ -152,7 +152,11 @@ type Discriminator struct {
 
 // 4.8.26 https://spec.openapis.org/oas/v3.1.0#xml-object
 type XML struct {
-	TODO
+	Name      string `json:"name,omitempty" yaml:"name,omitempty"`
+	Namespace string `json:"namespace,omitempty" yaml:"namespace,omitempty"`
+	Prefix    string `json:"prefix,omitempty" yaml:"prefix,omitempty"`
+	Attribute bool   `json:"attribute,omitempty" yaml:"attribute,omitempty"`
+	Wrapped   bool   `json:"wrapped,omitempty" yaml:"wrapped,omitempty"`
 }
 
 // 4.8.27 https://spec.openapis.org/oas/v3.1.0#security-scheme-object
@@ -163,7 +167,7 @@ type SecurityScheme struct {
 	Description      string             `json:"description,omitempty" yaml:"description,omitempty"`
 	Scheme           string             `json:"scheme,omitempty" yaml:"scheme,omitempty"`
 	BearerFormat     string             `json:"bearerFormat,omitempty" yaml:"bearerFormat,omitempty"`
-	Flows            TODO               `json:"flows,omitempty" yaml:"flows,omitempty"`
+	Flows            *OAuthFlows        `json:"flows,omitempty" yaml:"flows,omitempty"`
 	OpenIDConnectURL string             `json:"openIdConnectUrl,omitempty" yaml:"openIdConnectUrl,omitempty"`
 }
 
@@ -179,12 +183,18 @@ const (
 
 // 4.8.28 https://spec.openapis.org/oas/v3.1.0#oauth-flows-object
 type OAuthFlows struct {
-	TODO
+	Implicit          *OAuthFlow `json:"implicit,omitempty" yaml:"implicit,omitempty"`
+	Password          *OAuthFlow `json:"password,omitempty" yaml:"password,omitempty"`
+	ClientCredentials *OAuthFlow `json:"client_credentials,omitempty" yaml:"client_credentials,omitempty"`
+	AuthorizationCode *OAuthFlow `json:"authorization_code,omitempty" yaml:"authorization_code,omitempty"`
 }
 
 // 4.8.29 https://spec.openapis.org/oas/v3.1.0#oauth-flow-object
 type OAuthFlow struct {
-	TODO
+	AuthorizationURL string            `json:"authorization_url,omitempty" yaml:"authorization_url,omitempty"`
+	TokenURL         string            `json:"token_url,omitempty" yaml:"token_url,omitempty"`
+	RefreshURL       string            `json:"refresh_url,omitempty" yaml:"refresh_url,omitempty"`
+	Scopes           map[string]string `json:"scopes,omitempty" yaml:"scopes,omitempty"`
 }
 
 // 4.8.30 https://spec.openapis.org/oas/v3.1.0#security-requirement-object

@@ -10,11 +10,11 @@ type Schema struct {
 	WriteOnly   bool          `json:"write_only,omitempty" yaml:"write_only,omitempty"`
 	Examples    []interface{} `json:"examples,omitempty" yaml:"examples,omitempty"`
 
-	Type   SchemaType    `json:"type,omitempty" yaml:"type,omitempty"`
-	Format SchemaFormat  `json:"format,omitempty" yaml:"format,omitempty"`
-	Enum   []interface{} `json:"enum,omitempty" yaml:"enum,omitempty"`
-	Const  interface{}   `json:"const,omitempty" yaml:"const,omitempty"`
-	Items  *Ref[Schema]  `json:"items,omitempty" yaml:"items,omitempty"`
+	Type   SchemaType   `json:"type,omitempty" yaml:"type,omitempty"`
+	Format SchemaFormat `json:"format,omitempty" yaml:"format,omitempty"`
+	Enum   []string     `json:"enum,omitempty" yaml:"enum,omitempty"`
+	Const  interface{}  `json:"const,omitempty" yaml:"const,omitempty"`
+	Items  *Ref[Schema] `json:"items,omitempty" yaml:"items,omitempty"`
 
 	// Numeric
 	MultipleOf       *float64 `json:"multipleOf,omitempty" yaml:"multipleOf,omitempty"`
@@ -43,6 +43,8 @@ type Schema struct {
 	DependentRequired interface{}             `json:"dependentRequired,omitempty" yaml:"dependentRequired,omitempty"`
 
 	AllOf []*Ref[Schema] `json:"allOf,omitempty" yaml:"allOf,omitempty"`
+
+	XML *XML `json:"xml,omitempty" yaml:"xml,omitempty"`
 }
 
 type SchemaType string

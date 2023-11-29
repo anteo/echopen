@@ -53,3 +53,14 @@ func WithRequestBodyStruct(description string, target interface{}) RouteConfigFu
 		return rw
 	}
 }
+
+func WithRequestBodyRef(name string) RouteConfigFunc {
+	return func(rw *RouteWrapper) *RouteWrapper {
+		req := rw.API.Spec.GetComponents().GetRequestBody(name)
+		if req == nil {
+			panic("echopen: request body not registered")
+		}
+		rw.Operation.AddRequestBodyRef(fmt.Sprintf("#/components/requestBodies/%s", name))
+		return rw
+	}
+}

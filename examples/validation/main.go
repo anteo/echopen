@@ -44,8 +44,8 @@ func main() {
 		"/validate",
 		validate,
 		echopen.WithRequestBodyStruct("Request parameters", Request{}),
-		echopen.WithResponseBody(fmt.Sprint(http.StatusOK), "Successful response", Response{}),
-		echopen.WithResponseBody("default", "Error response", Error{}),
+		echopen.WithResponseStruct(fmt.Sprint(http.StatusOK), "Successful response", Response{}),
+		echopen.WithResponseStruct("default", "Error response", Error{}),
 	)
 
 	// Serve the generated schema

@@ -50,9 +50,9 @@ func main() {
 		echopen.WithTags("params"),
 		echopen.WithPathStruct(PathParams{}),
 		echopen.WithQueryStruct(QueryParams{}),
-		echopen.WithResponseBody(fmt.Sprint(http.StatusOK), "Default response", ValidResponseBody{}),
-		echopen.WithResponseBody(fmt.Sprint(http.StatusBadRequest), "Bad request", ErrorResponseBody{}),
-		echopen.WithResponseBody(fmt.Sprint(http.StatusNotFound), "Not found", ErrorResponseBody{}),
+		echopen.WithResponseStruct(fmt.Sprint(http.StatusOK), "Default response", ValidResponseBody{}),
+		echopen.WithResponseStruct(fmt.Sprint(http.StatusBadRequest), "Bad request", ErrorResponseBody{}),
+		echopen.WithResponseStruct(fmt.Sprint(http.StatusNotFound), "Not found", ErrorResponseBody{}),
 	)
 
 	// Serve the generated schema

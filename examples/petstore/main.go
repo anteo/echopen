@@ -36,8 +36,8 @@ Nam sed condimentum est. Maecenas tempor sagittis sapien, nec rhoncus sem sagitt
 Sed tempus felis lobortis leo pulvinar rutrum. Nam mattis velit nisl, eu condimentum ligula luctus nec. Phasellus semper velit eget aliquet faucibus. In a mattis elit. Phasellus vel urna viverra, condimentum lorem id, rhoncus nibh. Ut pellentesque posuere elementum. Sed a varius odio. Morbi rhoncus ligula libero, vel eleifend nunc tristique vitae. Fusce et sem dui. Aenean nec scelerisque tortor. Fusce malesuada accumsan magna vel tempus. Quisque mollis felis eu dolor tristique, sit amet auctor felis gravida. Sed libero lorem, molestie sed nisl in, accumsan tempor nisi. Fusce sollicitudin massa ut lacinia mattis. Sed vel eleifend lorem. Pellentesque vitae felis pretium, pulvinar elit eu, euismod sapien.
 		`),
 		echopen.WithQueryStruct(FindPetsQuery{}),
-		echopen.WithResponseBody(fmt.Sprint(http.StatusOK), "pet response", []Pet{}),
-		echopen.WithResponseBody("default", "unexpected error", Error{}),
+		echopen.WithResponseStruct(fmt.Sprint(http.StatusOK), "pet response", []Pet{}),
+		echopen.WithResponseStruct("default", "unexpected error", Error{}),
 	)
 
 	api.POST(
@@ -46,8 +46,8 @@ Sed tempus felis lobortis leo pulvinar rutrum. Nam mattis velit nisl, eu condime
 		echopen.WithOperationID("addPet"),
 		echopen.WithDescription("Creates a new pet in the store. Duplicates are allowed"),
 		echopen.WithRequestBodyStruct("Pet to add to the store", NewPet{}),
-		echopen.WithResponseBody(fmt.Sprint(http.StatusOK), "pet response", Pet{}),
-		echopen.WithResponseBody("default", "unexpected error", Error{}),
+		echopen.WithResponseStruct(fmt.Sprint(http.StatusOK), "pet response", Pet{}),
+		echopen.WithResponseStruct("default", "unexpected error", Error{}),
 	)
 
 	api.GET(
@@ -63,8 +63,8 @@ Sed tempus felis lobortis leo pulvinar rutrum. Nam mattis velit nisl, eu condime
 				Format: "int64",
 			},
 		}),
-		echopen.WithResponseBody(fmt.Sprint(http.StatusOK), "pet response", Pet{}),
-		echopen.WithResponseBody("default", "unexpected error", Error{}),
+		echopen.WithResponseStruct(fmt.Sprint(http.StatusOK), "pet response", Pet{}),
+		echopen.WithResponseStruct("default", "unexpected error", Error{}),
 	)
 
 	api.DELETE(
@@ -81,7 +81,7 @@ Sed tempus felis lobortis leo pulvinar rutrum. Nam mattis velit nisl, eu condime
 			},
 		}),
 		echopen.WithResponseDescription(fmt.Sprint(http.StatusNoContent), "pet deleted"),
-		echopen.WithResponseBody("default", "unexpected error", Error{}),
+		echopen.WithResponseStruct("default", "unexpected error", Error{}),
 	)
 
 	// Serve the generated schema

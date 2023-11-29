@@ -28,7 +28,7 @@ func main() {
 		echopen.WithDescription("Finds all pets the user has access to"),
 		echopen.WithTags("pets"),
 		echopen.WithQueryStruct(FindPetsQuery{}),
-		echopen.WithResponseBody(fmt.Sprint(http.StatusOK), "pet response", []Pet{}),
+		echopen.WithResponseStruct(fmt.Sprint(http.StatusOK), "pet response", []Pet{}),
 		echopen.WithResponseRef("default", "UnexpectedErrorResponse"),
 	)
 

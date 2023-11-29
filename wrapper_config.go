@@ -70,3 +70,14 @@ func WithSpecServer(s *v310.Server) WrapperConfigFunc {
 func (a *APIWrapper) SetErrorHandler(h echo.HTTPErrorHandler) {
 	a.Engine.HTTPErrorHandler = h
 }
+
+func (a *APIWrapper) SetSpecExternalDocs(d *v310.ExternalDocs) {
+	a.Spec.ExternalDocs = d
+}
+
+func WithSpecExternalDocs(d *v310.ExternalDocs) WrapperConfigFunc {
+	return func(a *APIWrapper) *APIWrapper {
+		a.SetSpecExternalDocs(d)
+		return a
+	}
+}

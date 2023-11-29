@@ -25,7 +25,7 @@ func main() {
 		"/hello",
 		hello,
 		echopen.WithTags("hello_world"),
-		echopen.WithResponseBody(fmt.Sprint(http.StatusOK), "Default response", ""),
+		echopen.WithResponseStruct(fmt.Sprint(http.StatusOK), "Default response", ""),
 	)
 
 	// Hello World route
@@ -33,7 +33,7 @@ func main() {
 		"/hidden",
 		hidden,
 		echopen.WithTags("hidden"),
-		echopen.WithResponseBody(fmt.Sprint(http.StatusOK), "Default response", ""),
+		echopen.WithResponseStruct(fmt.Sprint(http.StatusOK), "Default response", ""),
 	)
 
 	// Serve the generated schema

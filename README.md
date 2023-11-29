@@ -45,7 +45,7 @@ api.GET(
   "/hello",
   hello,
   echopen.WithTags("hello_world"),
-  echopen.WithResponseBody(fmt.Sprint(http.StatusOK), "Default response", ""),
+  echopen.WithResponseStruct(fmt.Sprint(http.StatusOK), "Default response", ""),
   echopen.WithResponseDescription("default", "Unexpected error"),
 )
 
@@ -221,7 +221,8 @@ Several helpers are provided to assist with common cases:
 - `WithResponseDescription` - Adds a response for a given code containing only a description. Common way of documenting just the existence of a code.
 - `WithResponseRef` - Adds a response ref for a registered named response object under the spec `#/components/responses` map. Panics if the name does not exist.
 - `WithResponseFile` - Binary response with a given MIME type.
-- `WithResponseBody` - MIME type and schema inferred from a provided target value. If this is a named struct, the schema is registered under the spec `#/components/schemas` map and used by reference in the response object. See Component Reuse.
+- `WithResponseStructConfig` - MIME types and schema inferred from a provided config struct containing a target value.
+- `WithResponseStruct` - JSON-only version of `WithResponseStructConfig`
 
 In all cases `code` is a string to allow the catch-all `default` case to be specified, e.g.
 

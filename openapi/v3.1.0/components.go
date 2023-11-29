@@ -75,3 +75,19 @@ func (c *Components) GetSecurityScheme(name string) *SecurityScheme {
 	}
 	return nil
 }
+
+func (c *Components) AddRequestBody(name string, r *RequestBody) {
+	if c.RequestBodies == nil {
+		c.RequestBodies = map[string]*RequestBody{}
+	}
+	c.RequestBodies[name] = r
+}
+
+func (c *Components) GetRequestBody(name string) *RequestBody {
+	if c.RequestBodies == nil {
+		return nil
+	} else if v, ok := c.RequestBodies[name]; ok {
+		return v
+	}
+	return nil
+}

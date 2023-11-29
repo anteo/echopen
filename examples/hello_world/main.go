@@ -31,7 +31,7 @@ func main() {
 		"/hello",
 		hello,
 		echopen.WithTags("hello_world"),
-		echopen.WithResponseBody(fmt.Sprint(http.StatusOK), "Default response", ""),
+		echopen.WithResponseStruct(fmt.Sprint(http.StatusOK), "Default response", ""),
 		echopen.WithResponseDescription("default", "Unexpected error"),
 	)
 

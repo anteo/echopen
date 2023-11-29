@@ -2,11 +2,17 @@ package echopen
 
 import (
 	"fmt"
-	"reflect"
 
 	"github.com/labstack/echo/v4"
 	v310 "github.com/richjyoung/echopen/openapi/v3.1.0"
 )
+
+type ResponseStructConfig struct {
+	Description string
+	Target      interface{}
+	JSON        bool
+	XML         bool
+}
 
 func WithResponse(code string, resp *v310.Response) RouteConfigFunc {
 	return func(rw *RouteWrapper) *RouteWrapper {
@@ -32,21 +38,30 @@ func WithResponseRef(code string, name string) RouteConfigFunc {
 	}
 }
 
-func WithResponseBody(code string, description string, target interface{}) RouteConfigFunc {
-	t := reflect.TypeOf(target)
-	mime := echo.MIMEApplicationJSON
+func WithResponseStruct(code string, description string, target interface{}) RouteConfigFunc {
+	return WithResponseStructConfig(code, &ResponseStructConfig{
+		Description: description,
+		Target:      target,
+		JSON:        true,
+	})
+}
 
-	switch t.Kind() {
-	case reflect.String:
-		mime = echo.MIMETextPlain
-	}
-
+func WithResponseStructConfig(code string, config *ResponseStructConfig) RouteConfigFunc {
 	return func(rw *RouteWrapper) *RouteWrapper {
+		schema := rw.API.ToSchemaRef(config.Target)
+		content := map[string]*v310.MediaTypeObject{}
+
+		if config.JSON {
+			content[echo.MIMEApplicationJSON] = &v310.MediaTypeObject{Schema: schema}
+		}
+
+		if config.XML {
+			content[echo.MIMEApplicationXML] = &v310.MediaTypeObject{Schema: schema}
+		}
+
 		rw.Operation.AddResponse(code, &v310.Response{
-			Description: description,
-			Content: map[string]*v310.MediaTypeObject{
-				mime: {Schema: rw.API.ToSchemaRef(target)},
-			},
+			Description: config.Description,
+			Content:     content,
 		})
 
 		return rw

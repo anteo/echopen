@@ -44,6 +44,20 @@ func WithDescription(desc string) RouteConfigFunc {
 	}
 }
 
+func WithSummary(sum string) RouteConfigFunc {
+	return func(rw *RouteWrapper) *RouteWrapper {
+		rw.Operation.Summary = strings.TrimSpace(sum)
+		return rw
+	}
+}
+
+func WithDeprecated() RouteConfigFunc {
+	return func(rw *RouteWrapper) *RouteWrapper {
+		rw.Operation.Deprecated = true
+		return rw
+	}
+}
+
 func WithOptionalSecurity() RouteConfigFunc {
 	return func(rw *RouteWrapper) *RouteWrapper {
 		rw.Operation.AddSecurityRequirement(&v310.SecurityRequirement{})
