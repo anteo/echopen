@@ -44,3 +44,29 @@ type ApiResponse struct {
 	Type    string `json:"type,omitempty"`
 	Message string `json:"message,omitempty"`
 }
+
+type FindPetsByStatusQuery struct {
+	Status []string `query:"status" description:"Status values that need to be considered for filter" enum:"available,pending,sold"`
+}
+
+type FindPetsByTagsQuery struct {
+	Tags []string `query:"tags" description:"Tags to filter by"`
+}
+
+type UpdatePet struct {
+	Name   string `json:"name,omitempty" description:"Updated name of the pet"`
+	Status string `json:"status,omitempty" description:"Updated status of the pet"`
+}
+
+type GetOrderByIDPath struct {
+	OrderID int64 `path:"orderId" description:"ID of order that needs to be fetched" validate:"min=1,max=10"`
+}
+
+type DeleteOrderByIDPath struct {
+	OrderID int64 `path:"orderId" description:"ID of the order that needs to be deleted" validate:"min=1"`
+}
+
+type LoginUserQuery struct {
+	Username string `query:"username" description:"The user name for login"`
+	Password string `query:"password" description:"The password for login in clear text"`
+}

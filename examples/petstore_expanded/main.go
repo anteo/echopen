@@ -117,28 +117,8 @@ func main() {
 		echopen.WithSummary("Finds Pets by status"),
 		echopen.WithDescription("Multiple status values can be provided with comma separated strings"),
 		echopen.WithSecurityRequirement("petstore_auth", []string{"write:pets", "read:pets"}),
-		echopen.WithQueryParameter(&echopen.QueryParameterConfig{
-			Name:        "status",
-			Description: "Status values that need to be considered for filter",
-			Required:    true,
-			Explode:     true,
-			Schema: &v310.Schema{
-				Type: "array",
-				Items: &v310.Ref[v310.Schema]{
-					Value: &v310.Schema{
-						Type:    "string",
-						Enum:    []string{"available", "pending", "sold"},
-						Default: "available",
-					},
-				},
-			},
-		}),
-		echopen.WithResponseStructConfig("200", &echopen.ResponseStructConfig{
-			Description: "successful operation",
-			Target:      []Pet{},
-			JSON:        true,
-			XML:         true,
-		}),
+		echopen.WithQueryStruct(FindPetsByStatusQuery{}),
+		echopen.WithResponseStruct("200", "successful operation", []Pet{}),
 		echopen.WithResponseDescription("400", "Invalid status value"),
 	)
 
@@ -149,19 +129,8 @@ func main() {
 		echopen.WithSummary("Finds Pets by tags"),
 		echopen.WithDescription("Muliple tags can be provided with comma separated strings. Use tag1, tag2, tag3 for testing."),
 		echopen.WithSecurityRequirement("petstore_auth", []string{"write:pets", "read:pets"}),
-		echopen.WithQueryParameter(&echopen.QueryParameterConfig{
-			Name:        "tags",
-			Description: "Tags to filter by",
-			Required:    true,
-			Explode:     true,
-			Schema:      api.TypeToSchema(reflect.TypeOf([]string{})),
-		}),
-		echopen.WithResponseStructConfig("200", &echopen.ResponseStructConfig{
-			Description: "successful operation",
-			Target:      []Pet{},
-			JSON:        true,
-			XML:         true,
-		}),
+		echopen.WithQueryStruct(FindPetsByTagsQuery{}),
+		echopen.WithResponseStruct("200", "successful operation", []Pet{}),
 		echopen.WithResponseDescription("400", "Invalid tag value"),
 		echopen.WithDeprecated(),
 	)
@@ -173,15 +142,175 @@ func main() {
 		echopen.WithSummary("Find pet by ID"),
 		echopen.WithDescription("Returns a single pet"),
 		echopen.WithSecurityRequirement("api_key", []string{}),
-		echopen.WithPathParameter(&echopen.PathParameterConfig{
-			Name:        "petId",
-			Description: "ID of pet to return",
-			Schema:      api.TypeToSchema(reflect.TypeOf(int64(0))),
-		}),
+		echopen.WithPathParameter("petId", "ID of pet to return", int64(1234)),
 		echopen.WithResponseStruct("200", "successful operation", Pet{}),
 		echopen.WithResponseDescription("400", "Invalid ID supplied"),
 		echopen.WithResponseDescription("404", "Pet not found"),
 		echopen.WithResponseDescription("default", "successful response"),
+	)
+
+	petGroup.POST(
+		"/{petId}",
+		noop,
+		echopen.WithOperationID("updatePetWithForm"),
+		echopen.WithPathParameter("petId", "ID of pet to return", int64(1234)),
+		echopen.WithSecurityRequirement("petstore_auth", []string{"write:pets", "read:pets"}),
+		echopen.WithRequestBodyStruct("", UpdatePet{}),
+		echopen.WithResponseDescription("405", "Invalid input"),
+	)
+
+	petGroup.DELETE(
+		"/{petId}",
+		noop,
+		echopen.WithOperationID("deletePet"),
+		echopen.WithSummary("Deletes a pet"),
+		echopen.WithPathParameter("petId", "Pet id to delete", int64(1234)),
+		echopen.WithHeaderParameter(&echopen.HeaderParameterConfig{
+			Name:   "api_key",
+			Schema: api.TypeToSchema(reflect.TypeOf("")),
+		}),
+		echopen.WithSecurityRequirement("petstore_auth", []string{"write:pets", "read:pets"}),
+		echopen.WithResponseDescription("400", "Invalid ID supplied"),
+		echopen.WithResponseDescription("404", "Pet not found"),
+	)
+
+	petGroup.POST(
+		"/{petId}/uploadImage",
+		noop,
+		echopen.WithOperationID("uploadFile"),
+		echopen.WithSummary("uploads an image"),
+		echopen.WithPathParameter("petId", "ID of pet to update", int64(1234)),
+		echopen.WithSecurityRequirement("petstore_auth", []string{"write:pets", "read:pets"}),
+		echopen.WithRequestBodySchema("application/octet-stream", &v310.Schema{
+			Type:   "string",
+			Format: "binary",
+		}),
+		echopen.WithResponseStruct("200", "successful operation", ApiResponse{}),
+	)
+
+	store := api.Group("/store", echopen.WithGroupTags("store"))
+
+	store.GET(
+		"/inventory",
+		noop,
+		echopen.WithOperationID("getInventory"),
+		echopen.WithSummary("Returns pet inventories by status"),
+		echopen.WithDescription("Returns a map of status codes to quantities"),
+		echopen.WithSecurityRequirement("api_key", []string{}),
+		echopen.WithResponseType("200", "successful operation", map[string]int32{}),
+	)
+
+	store.POST(
+		"/order",
+		noop,
+		echopen.WithOperationID("placeOrder"),
+		echopen.WithSummary("Place an order for a pet"),
+		echopen.WithRequestBodyStruct("order placed for purchasing the pet", Order{}),
+		echopen.WithResponseStruct("200", "successful operation", Order{}),
+		echopen.WithResponseDescription("400", "Invalid Order"),
+	)
+
+	store.GET(
+		"/order/{orderId}",
+		noop,
+		echopen.WithOperationID("getOrderById"),
+		echopen.WithSummary("Find purchase order by ID"),
+		echopen.WithDescription("For valid response try integer IDs with value >= 1 and <= 10. Other values will generated exceptions"),
+		echopen.WithPathStruct(GetOrderByIDPath{}),
+		echopen.WithResponseStruct("200", "successful operation", Order{}),
+		echopen.WithResponseDescription("400", "Invalid ID supplied"),
+		echopen.WithResponseDescription("404", "Order not found"),
+	)
+
+	store.DELETE(
+		"/order/{orderId}",
+		noop,
+		echopen.WithOperationID("deleteOrder"),
+		echopen.WithSummary("Delete purchase order by ID"),
+		echopen.WithDescription("For valid response try integer IDs with positive integer value. Negative or non-integer values will generate API errors"),
+		echopen.WithPathStruct(DeleteOrderByIDPath{}),
+		echopen.WithResponseDescription("400", "Invalid ID supplied"),
+		echopen.WithResponseDescription("404", "Order not found"),
+	)
+
+	user := api.Group("/user", echopen.WithGroupTags("user"))
+
+	user.POST(
+		"",
+		noop,
+		echopen.WithOperationID("createUser"),
+		echopen.WithSummary("Create user"),
+		echopen.WithDescription("This can only be done by the logged in user."),
+		echopen.WithRequestBodyStruct("Created user object", User{}),
+		echopen.WithResponseDescription("default", "successful operation"),
+	)
+
+	user.POST(
+		"/createWithArray",
+		noop,
+		echopen.WithOperationID("createUsersWithArrayInput"),
+		echopen.WithSummary("Creates list of users with given input array"),
+		echopen.WithRequestBodyRef("UserArray"),
+		echopen.WithResponseDescription("default", "successful operation"),
+	)
+
+	user.POST(
+		"/createWithList",
+		noop,
+		echopen.WithOperationID("createUsersWithListInput"),
+		echopen.WithSummary("Creates list of users with given input array"),
+		echopen.WithRequestBodyRef("UserArray"),
+		echopen.WithResponseDescription("default", "successful operation"),
+	)
+
+	user.GET(
+		"/login",
+		noop,
+		echopen.WithOperationID("loginUser"),
+		echopen.WithSummary("Logs user into the system"),
+		echopen.WithQueryStruct(LoginUserQuery{}),
+		echopen.WithResponseType("200", "successful operation", "token"),
+		echopen.WithResponseDescription("400", "Invalid username/password supplied"),
+	)
+
+	user.GET(
+		"/logout",
+		noop,
+		echopen.WithOperationID("logoutUser"),
+		echopen.WithSummary("Logs out current logged in user session"),
+		echopen.WithResponseDescription("default", "successful operation"),
+	)
+
+	user.GET(
+		"/{username}",
+		noop,
+		echopen.WithOperationID("getUserByName"),
+		echopen.WithSummary("Get user by user name"),
+		echopen.WithPathParameter("username", "The name that needs to be fetched. Use user1 for testing. ", "username"),
+		echopen.WithResponseStruct("200", "successful operation", User{}),
+		echopen.WithResponseDescription("400", "Invalid username supplied"),
+		echopen.WithResponseDescription("404", "User not found"),
+	)
+
+	user.PUT(
+		"/{username}",
+		noop,
+		echopen.WithOperationID("updateUser"),
+		echopen.WithSummary("This can only be done by the logged in user."),
+		echopen.WithPathParameter("username", "name that need to be updated", "username"),
+		echopen.WithRequestBodyStruct("Updated user object", User{}),
+		echopen.WithResponseDescription("400", "Invalid user supplied"),
+		echopen.WithResponseDescription("404", "User not found"),
+	)
+
+	user.DELETE(
+		"/{username}",
+		noop,
+		echopen.WithOperationID("deleteUser"),
+		echopen.WithSummary("This can only be done by the logged in user."),
+		echopen.WithPathParameter("username", "The name that needs to be deleted", "username"),
+		echopen.WithResponseDescription("400", "Invalid username supplied"),
+		echopen.WithResponseDescription("404", "User not found"),
 	)
 
 	// Serve the generated schema
@@ -196,5 +325,6 @@ func main() {
 }
 
 func noop(c echo.Context) error {
+
 	return nil
 }

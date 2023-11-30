@@ -18,7 +18,7 @@ func (w *APIWrapper) ToSchemaRef(target interface{}) *v310.Ref[v310.Schema] {
 	return w.TypeToSchemaRef(typ)
 }
 
-// TypeToSchemaRef takes a reflected type and retunrs a SchemaRef.
+// TypeToSchemaRef takes a reflected type and returns a SchemaRef.
 // Where possible a Ref will be returned instead of a Value.
 // Struct names are assumed to be unique and thus conform to the same schema
 func (w *APIWrapper) TypeToSchemaRef(typ reflect.Type) *v310.Ref[v310.Schema] {
@@ -27,19 +27,22 @@ func (w *APIWrapper) TypeToSchemaRef(typ reflect.Type) *v310.Ref[v310.Schema] {
 		// Return a SchemaRef for the pointed value instead
 		return w.TypeToSchemaRef(typ.Elem())
 	} else if typ.Kind() == reflect.Struct {
-		// Check for anonymous structs
-		name := typ.Name()
-		if name != "" {
-			// Named structs can be stored in the Schema library and referenced multiple times
-			if w.Spec.GetComponents().GetSchema(name) == nil {
-				// First time this struct name has been seen, add to schemas
+		// Check if the struct has been seen before
+		if ref, exists := w.schemaMap[typ]; !exists {
+			// Check for anonymous structs
+			name := typ.Name()
+			if name != "" {
+				// Named structs can be stored in the Schema library and referenced multiple times
 				w.Spec.GetComponents().AddSchema(name, w.TypeToSchema(typ))
-			}
+				w.schemaMap[typ] = fmt.Sprintf("#/components/schemas/%s", name)
 
-			// Return a reference to the schema component
-			return &v310.Ref[v310.Schema]{
-				Ref: fmt.Sprintf("#/components/schemas/%s", name),
+				// Return a reference to the schema component
+				return &v310.Ref[v310.Schema]{
+					Ref: fmt.Sprintf("#/components/schemas/%s", name),
+				}
 			}
+		} else {
+			return &v310.Ref[v310.Schema]{Ref: ref}
 		}
 
 		// Anonymous struct, return actual schema instead
@@ -79,13 +82,18 @@ func (w *APIWrapper) TypeToSchema(typ reflect.Type) *v310.Schema {
 		return &v310.Schema{Type: "number", Format: "float"}
 	case reflect.Float64:
 		return &v310.Schema{Type: "number", Format: "double"}
-	case reflect.Map, reflect.Interface:
+	case reflect.Map:
+		if typ.Elem().Kind() != reflect.Interface {
+			return &v310.Schema{Type: "object", AdditionalProperties: w.TypeToSchemaRef(typ.Elem())}
+		}
+		return &v310.Schema{Type: "object"}
+	case reflect.Interface:
 		return &v310.Schema{Type: "object"}
 	case reflect.Array, reflect.Slice:
 		return &v310.Schema{Type: "array", Items: w.TypeToSchemaRef(typ.Elem())}
 	case reflect.Struct:
-		// Get schema for struct including contained fields
-		return w.StructTypeToSchema(typ)
+		// Get schema for struct including contained fields (assume json)
+		return w.StructTypeToSchema(typ, "json")
 	case reflect.Pointer:
 		// Get schema for pointed type
 		return w.TypeToSchema(typ.Elem())
@@ -96,7 +104,7 @@ func (w *APIWrapper) TypeToSchema(typ reflect.Type) *v310.Schema {
 
 // StructTypeToSchema iterates over struct fields to build a schema.
 // Assumes JSON content type.
-func (w *APIWrapper) StructTypeToSchema(target reflect.Type) *v310.Schema {
+func (w *APIWrapper) StructTypeToSchema(target reflect.Type, nameTag string) *v310.Schema {
 	// Schema object for direct fields within the struct
 	s := &v310.Schema{
 		Type:       "object",
@@ -112,31 +120,18 @@ func (w *APIWrapper) StructTypeToSchema(target reflect.Type) *v310.Schema {
 	for i := 0; i < target.NumField(); i++ {
 		f := target.Field(i)
 
+		name := strings.Split(f.Tag.Get(nameTag), ",")[0]
+
 		// Get SchemaRef for the contained field
-		ref := w.TypeToSchemaRef(f.Type)
+		ref := w.StructFieldToSchemaRef(f)
 
 		// Get the name from the json tag (does assume only JSON is used)
-		name, omitEmpty := ExtractJSONTags(f)
+		_, omitEmpty := ExtractJSONTags(f)
 
 		if f.Anonymous {
 			// Anonymous members of a struct imply composition
 			a.AllOf = append(a.AllOf, ref)
 		} else {
-			// Check if a ref or a value has been returned for the field
-			if ref.Value != nil {
-				// Populate extra schema fields from struct tags
-				ref.Value.Description = f.Tag.Get("description")
-
-				// Extract validation rules
-				ExtractValidationRules(f, ref.Value)
-
-				// Examples
-				example := f.Tag.Get("example")
-				if example != "" {
-					ref.Value.Examples = append(ref.Value.Examples, example)
-				}
-			}
-
 			// Add the field schema to the struct properties map
 			s.Properties[name] = ref
 
@@ -154,6 +149,34 @@ func (w *APIWrapper) StructTypeToSchema(target reflect.Type) *v310.Schema {
 		return a
 	}
 	return s
+}
+
+func (w *APIWrapper) StructFieldToSchemaRef(f reflect.StructField) *v310.Ref[v310.Schema] {
+	ref := w.TypeToSchemaRef(f.Type)
+
+	if ref.Value != nil {
+		ref.Value.Description = f.Tag.Get("description")
+		def := f.Tag.Get("default")
+		if def != "" {
+			ref.Value.Default = def
+		}
+
+		enum := f.Tag.Get("enum")
+		if enum != "" {
+			ref.Value.Enum = strings.Split(enum, ",")
+		}
+
+		// Extract validation rules
+		ExtractValidationRules(f, ref.Value)
+
+		// Examples
+		example := f.Tag.Get("example")
+		if example != "" {
+			ref.Value.Examples = append(ref.Value.Examples, example)
+		}
+	}
+
+	return ref
 }
 
 func ExtractJSONTags(field reflect.StructField) (string, bool) {

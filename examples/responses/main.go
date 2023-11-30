@@ -49,14 +49,14 @@ func main() {
 		echopen.WithOperationID("findPetByID"),
 		echopen.WithDescription("Returns a user based on a single ID, if the user does not have access to the pet"),
 		echopen.WithTags("pets"),
-		echopen.WithPathParameter(&echopen.PathParameterConfig{
-			Name:        "id",
-			Description: "ID of pet to fetch",
-			Schema: &v310.Schema{
-				Type:   v310.IntegerSchemaType,
-				Format: "int64",
-			},
-		}),
+		// echopen.WithPathParameter(&echopen.PathParameterConfig{
+		// 	Name:        "id",
+		// 	Description: "ID of pet to fetch",
+		// 	Schema: &v310.Schema{
+		// 		Type:   v310.IntegerSchemaType,
+		// 		Format: "int64",
+		// 	},
+		// }),
 		echopen.WithResponseRef(fmt.Sprint(http.StatusOK), "PetResponse"),
 		echopen.WithResponseRef(fmt.Sprint(http.StatusNotFound), "NotFoundResponse"),
 		echopen.WithResponseRef("default", "UnexpectedErrorResponse"),
@@ -68,14 +68,14 @@ func main() {
 		echopen.WithOperationID("deletePet"),
 		echopen.WithDescription("deletes a single pet based on the ID supplied"),
 		echopen.WithTags("pets"),
-		echopen.WithPathParameter(&echopen.PathParameterConfig{
-			Name:        "id",
-			Description: "ID of pet to delete",
-			Schema: &v310.Schema{
-				Type:   v310.IntegerSchemaType,
-				Format: "int64",
-			},
-		}),
+		// echopen.WithPathParameter(&echopen.PathParameterConfig{
+		// 	Name:        "id",
+		// 	Description: "ID of pet to delete",
+		// 	Schema: &v310.Schema{
+		// 		Type:   v310.IntegerSchemaType,
+		// 		Format: "int64",
+		// 	},
+		// }),
 		echopen.WithResponseDescription(fmt.Sprint(http.StatusNoContent), "pet deleted"),
 		echopen.WithResponseRef(fmt.Sprint(http.StatusNotFound), "NotFoundResponse"),
 		echopen.WithResponseRef("default", "UnexpectedErrorResponse"),

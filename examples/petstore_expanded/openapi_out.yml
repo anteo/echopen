@@ -82,6 +82,8 @@ paths:
                   schema:
                     type: integer
                     format: int64
+                  examples:
+                    - value: 1234
             responses:
                 "200":
                     description: successful operation
@@ -97,6 +99,93 @@ paths:
                     description: successful response
             security:
                 - api_key: []
+        post:
+            operationId: updatePetWithForm
+            tags:
+                - pet
+            parameters:
+                - name: petId
+                  in: path
+                  description: ID of pet to return
+                  required: true
+                  schema:
+                    type: integer
+                    format: int64
+                  examples:
+                    - value: 1234
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/UpdatePet'
+            responses:
+                "405":
+                    description: Invalid input
+            security:
+                - petstore_auth:
+                    - write:pets
+                    - read:pets
+        delete:
+            operationId: deletePet
+            summary: Deletes a pet
+            tags:
+                - pet
+            parameters:
+                - name: petId
+                  in: path
+                  description: Pet id to delete
+                  required: true
+                  schema:
+                    type: integer
+                    format: int64
+                  examples:
+                    - value: 1234
+                - name: Api_key
+                  in: header
+                  schema:
+                    type: string
+            responses:
+                "400":
+                    description: Invalid ID supplied
+                "404":
+                    description: Pet not found
+            security:
+                - petstore_auth:
+                    - write:pets
+                    - read:pets
+    /pet/{petId}/uploadImage:
+        post:
+            operationId: uploadFile
+            summary: uploads an image
+            tags:
+                - pet
+            parameters:
+                - name: petId
+                  in: path
+                  description: ID of pet to update
+                  required: true
+                  schema:
+                    type: integer
+                    format: int64
+                  examples:
+                    - value: 1234
+            requestBody:
+                content:
+                    application/octet-stream:
+                        schema:
+                            type: string
+                            format: binary
+            responses:
+                "200":
+                    description: successful operation
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ApiResponse'
+            security:
+                - petstore_auth:
+                    - write:pets
+                    - read:pets
     /pet/findByStatus:
         get:
             operationId: findPetsByStatus
@@ -109,26 +198,20 @@ paths:
                   in: query
                   description: Status values that need to be considered for filter
                   required: true
-                  explode: true
+                  style: form
                   schema:
                     type: array
+                    enum:
+                        - available
+                        - pending
+                        - sold
                     items:
-                        default: available
                         type: string
-                        enum:
-                            - available
-                            - pending
-                            - sold
             responses:
                 "200":
                     description: successful operation
                     content:
                         application/json:
-                            schema:
-                                type: array
-                                items:
-                                    $ref: '#/components/schemas/Pet'
-                        application/xml:
                             schema:
                                 type: array
                                 items:
@@ -151,7 +234,7 @@ paths:
                   in: query
                   description: Tags to filter by
                   required: true
-                  explode: true
+                  style: form
                   schema:
                     type: array
                     items:
@@ -165,11 +248,6 @@ paths:
                                 type: array
                                 items:
                                     $ref: '#/components/schemas/Pet'
-                        application/xml:
-                            schema:
-                                type: array
-                                items:
-                                    $ref: '#/components/schemas/Pet'
                 "400":
                     description: Invalid tag value
             deprecated: true
@@ -177,8 +255,253 @@ paths:
                 - petstore_auth:
                     - write:pets
                     - read:pets
+    /store/inventory:
+        get:
+            operationId: getInventory
+            description: Returns a map of status codes to quantities
+            summary: Returns pet inventories by status
+            tags:
+                - store
+            responses:
+                "200":
+                    description: successful operation
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                additionalProperties:
+                                    type: integer
+                                    format: int32
+            security:
+                - api_key: []
+    /store/order:
+        post:
+            operationId: placeOrder
+            summary: Place an order for a pet
+            tags:
+                - store
+            requestBody:
+                description: order placed for purchasing the pet
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/Order'
+            responses:
+                "200":
+                    description: successful operation
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Order'
+                "400":
+                    description: Invalid Order
+    /store/order/{orderId}:
+        get:
+            operationId: getOrderById
+            description: For valid response try integer IDs with value >= 1 and <= 10. Other values will generated exceptions
+            summary: Find purchase order by ID
+            tags:
+                - store
+            parameters:
+                - name: orderId
+                  in: path
+                  description: ID of order that needs to be fetched
+                  required: true
+                  schema:
+                    type: integer
+                    format: int64
+                    maximum: 10
+                    minimum: 1
+            responses:
+                "200":
+                    description: successful operation
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Order'
+                "400":
+                    description: Invalid ID supplied
+                "404":
+                    description: Order not found
+        delete:
+            operationId: deleteOrder
+            description: For valid response try integer IDs with positive integer value. Negative or non-integer values will generate API errors
+            summary: Delete purchase order by ID
+            tags:
+                - store
+            parameters:
+                - name: orderId
+                  in: path
+                  description: ID of the order that needs to be deleted
+                  required: true
+                  schema:
+                    type: integer
+                    format: int64
+                    minimum: 1
+            responses:
+                "400":
+                    description: Invalid ID supplied
+                "404":
+                    description: Order not found
+    /user:
+        post:
+            operationId: createUser
+            description: This can only be done by the logged in user.
+            summary: Create user
+            tags:
+                - user
+            requestBody:
+                description: Created user object
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/User'
+            responses:
+                default:
+                    description: successful operation
+    /user/{username}:
+        get:
+            operationId: getUserByName
+            summary: Get user by user name
+            tags:
+                - user
+            parameters:
+                - name: username
+                  in: path
+                  description: 'The name that needs to be fetched. Use user1 for testing. '
+                  required: true
+                  schema:
+                    type: string
+                  examples:
+                    - value: username
+            responses:
+                "200":
+                    description: successful operation
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/User'
+                "400":
+                    description: Invalid username supplied
+                "404":
+                    description: User not found
+        put:
+            operationId: updateUser
+            summary: This can only be done by the logged in user.
+            tags:
+                - user
+            parameters:
+                - name: username
+                  in: path
+                  description: name that need to be updated
+                  required: true
+                  schema:
+                    type: string
+                  examples:
+                    - value: username
+            requestBody:
+                description: Updated user object
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/User'
+            responses:
+                "400":
+                    description: Invalid user supplied
+                "404":
+                    description: User not found
+        delete:
+            operationId: deleteUser
+            summary: This can only be done by the logged in user.
+            tags:
+                - user
+            parameters:
+                - name: username
+                  in: path
+                  description: The name that needs to be deleted
+                  required: true
+                  schema:
+                    type: string
+                  examples:
+                    - value: username
+            responses:
+                "400":
+                    description: Invalid username supplied
+                "404":
+                    description: User not found
+    /user/createWithArray:
+        post:
+            operationId: createUsersWithArrayInput
+            summary: Creates list of users with given input array
+            tags:
+                - user
+            requestBody:
+                $ref: '#/components/requestBodies/UserArray'
+            responses:
+                default:
+                    description: successful operation
+    /user/createWithList:
+        post:
+            operationId: createUsersWithListInput
+            summary: Creates list of users with given input array
+            tags:
+                - user
+            requestBody:
+                $ref: '#/components/requestBodies/UserArray'
+            responses:
+                default:
+                    description: successful operation
+    /user/login:
+        get:
+            operationId: loginUser
+            summary: Logs user into the system
+            tags:
+                - user
+            parameters:
+                - name: username
+                  in: query
+                  description: The user name for login
+                  required: true
+                  style: form
+                  schema:
+                    type: string
+                - name: password
+                  in: query
+                  description: The password for login in clear text
+                  required: true
+                  style: form
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: successful operation
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                "400":
+                    description: Invalid username/password supplied
+    /user/logout:
+        get:
+            operationId: logoutUser
+            summary: Logs out current logged in user session
+            tags:
+                - user
+            responses:
+                default:
+                    description: successful operation
 components:
     schemas:
+        ApiResponse:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: int32
+                message:
+                    type: string
+                type:
+                    type: string
         Category:
             type: object
             properties:
@@ -187,6 +510,30 @@ components:
                     format: int64
                 name:
                     type: string
+        Order:
+            type: object
+            properties:
+                complete:
+                    default: "false"
+                    type: bool
+                id:
+                    type: integer
+                    format: int64
+                petId:
+                    type: integer
+                    format: int64
+                quantity:
+                    type: integer
+                    format: int32
+                shipDate:
+                    type: string
+                status:
+                    description: Order Status
+                    type: string
+                    enum:
+                        - placed
+                        - approved
+                        - delivered
         Pet:
             type: object
             required:
@@ -209,6 +556,10 @@ components:
                 status:
                     description: pet status in the store
                     type: string
+                    enum:
+                        - available
+                        - pending
+                        - sold
                 tags:
                     type: array
                     items:
@@ -220,6 +571,15 @@ components:
                     type: integer
                     format: int64
                 name:
+                    type: string
+        UpdatePet:
+            type: object
+            properties:
+                name:
+                    description: Updated name of the pet
+                    type: string
+                status:
+                    description: Updated status of the pet
                     type: string
         User:
             type: object
@@ -267,7 +627,7 @@ components:
             type: oauth2
             flows:
                 implicit:
-                    authorization_url: http://petstore.swagger.io/oauth/dialog
+                    authorizationUrl: http://petstore.swagger.io/oauth/dialog
                     scopes:
                         read:pets: read your pets
                         write:pets: modify pets in your account

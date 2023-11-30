@@ -22,9 +22,8 @@ type QueryParameterConfig struct {
 	Description   string
 	ContextKey    string
 	Required      bool
-	Style         string
-	Explode       bool
 	Schema        *v310.Schema
+	Target        interface{}
 	AllowMultiple bool
 }
 
@@ -56,26 +55,31 @@ func WithParameter(param *v310.Parameter) RouteConfigFunc {
 	}
 }
 
-func WithPathParameter(param *PathParameterConfig) RouteConfigFunc {
+func WithPathParameter(name string, description string, example interface{}) RouteConfigFunc {
 	return func(rw *RouteWrapper) *RouteWrapper {
 		rw.Middlewares = append(rw.Middlewares, func(next echo.HandlerFunc) echo.HandlerFunc {
 			return func(c echo.Context) error {
-				p := c.Param(param.Name)
-				if param.ContextKey == "" {
-					param.ContextKey = fmt.Sprintf("path.%s", param.Name)
-				}
-				c.Set(param.ContextKey, p)
+				p := c.Param(name)
+				c.Set(fmt.Sprintf("path.%s", name), p)
 				return next(c)
 			}
 		})
 
-		rw.Operation.AddParameter(&v310.Parameter{
-			Name:        param.Name,
+		pathParam := &v310.Parameter{
+			Name:        name,
 			In:          "path",
-			Description: param.Description,
+			Description: description,
 			Required:    true,
-			Schema:      param.Schema,
-		})
+		}
+
+		if example != nil {
+			pathParam.Schema = rw.API.TypeToSchema(reflect.TypeOf(example))
+			pathParam.Examples = []*v310.Example{
+				{Value: example},
+			}
+		}
+
+		rw.Operation.AddParameter(pathParam)
 
 		return rw
 	}
@@ -114,15 +118,17 @@ func WithPathStruct(target interface{}) RouteConfigFunc {
 			}
 		})
 
-		for i := 0; i < t.NumField(); i++ {
-			f := t.Field(i)
-			tag := f.Tag.Get("param")
+		s := rw.API.StructTypeToSchema(t, "path")
+
+		for name, prop := range s.Properties {
+			desc := prop.Value.Description
+			prop.Value.Description = ""
 			rw.Operation.AddParameter(&v310.Parameter{
-				Name:        tag,
+				Name:        name,
 				In:          "path",
 				Required:    true,
-				Description: f.Tag.Get("description"),
-				Schema:      rw.API.TypeToSchema(f.Type),
+				Description: desc,
+				Schema:      prop.Value,
 			})
 		}
 
@@ -130,7 +136,17 @@ func WithPathStruct(target interface{}) RouteConfigFunc {
 	}
 }
 
-func WithQueryParameter(param *QueryParameterConfig) RouteConfigFunc {
+func WithQueryParameter(name string, description string) RouteConfigFunc {
+	return WithQueryParameterConfig(&QueryParameterConfig{
+		Name:        name,
+		Description: description,
+		Schema: &v310.Schema{
+			Type: "string",
+		},
+	})
+}
+
+func WithQueryParameterConfig(param *QueryParameterConfig) RouteConfigFunc {
 	return func(rw *RouteWrapper) *RouteWrapper {
 		rw.Middlewares = append(rw.Middlewares, func(next echo.HandlerFunc) echo.HandlerFunc {
 			return func(c echo.Context) error {
@@ -155,14 +171,18 @@ func WithQueryParameter(param *QueryParameterConfig) RouteConfigFunc {
 			}
 		})
 
+		if param.Schema == nil && param.Target != nil {
+			param.Schema = rw.API.TypeToSchema(reflect.TypeOf(param.Target))
+		}
+
 		rw.Operation.AddParameter(&v310.Parameter{
 			Name:        param.Name,
 			In:          "query",
 			Description: param.Description,
 			Schema:      param.Schema,
 			Required:    param.Required,
-			Explode:     param.Explode,
-			Style:       param.Style,
+			Explode:     true,
+			Style:       "form",
 		})
 
 		return rw
@@ -202,16 +222,28 @@ func WithQueryStruct(target interface{}) RouteConfigFunc {
 			}
 		})
 
-		for i := 0; i < t.NumField(); i++ {
-			f := t.Field(i)
-			tag := f.Tag.Get("query")
+		s := rw.API.StructTypeToSchema(t, "query")
+
+		for name, prop := range s.Properties {
+			required := false
+			for _, reqd := range s.Required {
+				if name == reqd {
+					required = true
+					break
+				}
+			}
 			rw.Operation.AddParameter(&v310.Parameter{
-				Name:        tag,
+				Name:        name,
 				In:          "query",
-				Required:    f.Type.Kind() != reflect.Ptr,
-				Description: f.Tag.Get("description"),
+				Required:    required,
+				Description: prop.Value.Description,
 				Style:       "form",
-				Schema:      rw.API.TypeToSchema(f.Type),
+				Schema: &v310.Schema{
+					Type:    prop.Value.Type,
+					Items:   prop.Value.Items,
+					Enum:    prop.Value.Enum,
+					Default: prop.Value.Default,
+				},
 			})
 		}
 

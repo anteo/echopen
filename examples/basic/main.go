@@ -49,10 +49,15 @@ func main() {
 	// Add a group
 	helloGroup := api.Group("/hello", echopen.WithGroupTags("hello_world"))
 	helloGroup.GET("", hello)
-	helloGroup.GET("/:id", helloID, echopen.WithTags("param"), echopen.WithPathParameter(&echopen.PathParameterConfig{
-		Name:        "id",
-		Description: "ID Parameter",
-	}))
+	helloGroup.GET(
+		"/:id",
+		helloID,
+		echopen.WithTags("param"),
+		// echopen.WithPathParameter(&echopen.PathParameterConfig{
+		// 	Name:        "id",
+		// 	Description: "ID Parameter",
+		// }),
+	)
 
 	helloGroup.GET("/query", helloQuery, echopen.WithQueryStruct(QueryParams{}))
 	helloGroup.PATCH("/body", helloBody, echopen.WithRequestBodyStruct("Body params", RequestBody{}))

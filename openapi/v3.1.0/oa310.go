@@ -95,7 +95,7 @@ const (
 
 // 4.8.13 https://spec.openapis.org/oas/v3.1.0#request-body-object
 type RequestBody struct {
-	Description *string                     `json:"description,omitempty" yaml:"description,omitempty"`
+	Description string                      `json:"description,omitempty" yaml:"description,omitempty"`
 	Content     map[string]*MediaTypeObject `json:"content" yaml:"content"`
 	Required    bool                        `json:"required,omitempty" yaml:"required,omitempty"`
 }
@@ -185,15 +185,15 @@ const (
 type OAuthFlows struct {
 	Implicit          *OAuthFlow `json:"implicit,omitempty" yaml:"implicit,omitempty"`
 	Password          *OAuthFlow `json:"password,omitempty" yaml:"password,omitempty"`
-	ClientCredentials *OAuthFlow `json:"client_credentials,omitempty" yaml:"client_credentials,omitempty"`
-	AuthorizationCode *OAuthFlow `json:"authorization_code,omitempty" yaml:"authorization_code,omitempty"`
+	ClientCredentials *OAuthFlow `json:"clientCredentials,omitempty" yaml:"clientCredentials,omitempty"`
+	AuthorizationCode *OAuthFlow `json:"authorizationCode,omitempty" yaml:"authorizationCode,omitempty"`
 }
 
 // 4.8.29 https://spec.openapis.org/oas/v3.1.0#oauth-flow-object
 type OAuthFlow struct {
-	AuthorizationURL string            `json:"authorization_url,omitempty" yaml:"authorization_url,omitempty"`
-	TokenURL         string            `json:"token_url,omitempty" yaml:"token_url,omitempty"`
-	RefreshURL       string            `json:"refresh_url,omitempty" yaml:"refresh_url,omitempty"`
+	AuthorizationURL string            `json:"authorizationUrl,omitempty" yaml:"authorizationUrl,omitempty"`
+	TokenURL         string            `json:"tokenUrl,omitempty" yaml:"tokenUrl,omitempty"`
+	RefreshURL       string            `json:"refreshUrl,omitempty" yaml:"refreshUrl,omitempty"`
 	Scopes           map[string]string `json:"scopes,omitempty" yaml:"scopes,omitempty"`
 }
 

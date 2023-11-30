@@ -55,14 +55,14 @@ Sed tempus felis lobortis leo pulvinar rutrum. Nam mattis velit nisl, eu condime
 		findPetByID,
 		echopen.WithOperationID("findPetByID"),
 		echopen.WithDescription("Returns a user based on a single ID, if the user does not have access to the pet"),
-		echopen.WithPathParameter(&echopen.PathParameterConfig{
-			Name:        "id",
-			Description: "ID of pet to fetch",
-			Schema: &v310.Schema{
-				Type:   v310.IntegerSchemaType,
-				Format: "int64",
-			},
-		}),
+		// echopen.WithPathParameter(&echopen.PathParameterConfig{
+		// 	Name:        "id",
+		// 	Description: "ID of pet to fetch",
+		// 	Schema: &v310.Schema{
+		// 		Type:   v310.IntegerSchemaType,
+		// 		Format: "int64",
+		// 	},
+		// }),
 		echopen.WithResponseStruct(fmt.Sprint(http.StatusOK), "pet response", Pet{}),
 		echopen.WithResponseStruct("default", "unexpected error", Error{}),
 	)
@@ -72,14 +72,14 @@ Sed tempus felis lobortis leo pulvinar rutrum. Nam mattis velit nisl, eu condime
 		deletePet,
 		echopen.WithOperationID("deletePet"),
 		echopen.WithDescription("deletes a single pet based on the ID supplied"),
-		echopen.WithPathParameter(&echopen.PathParameterConfig{
-			Name:        "id",
-			Description: "ID of pet to delete",
-			Schema: &v310.Schema{
-				Type:   v310.IntegerSchemaType,
-				Format: "int64",
-			},
-		}),
+		// echopen.WithPathParameter(&echopen.PathParameterConfig{
+		// 	Name:        "id",
+		// 	Description: "ID of pet to delete",
+		// 	Schema: &v310.Schema{
+		// 		Type:   v310.IntegerSchemaType,
+		// 		Format: "int64",
+		// 	},
+		// }),
 		echopen.WithResponseDescription(fmt.Sprint(http.StatusNoContent), "pet deleted"),
 		echopen.WithResponseStruct("default", "unexpected error", Error{}),
 	)

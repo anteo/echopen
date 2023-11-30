@@ -2,6 +2,7 @@ package echopen
 
 import (
 	"fmt"
+	"reflect"
 
 	"github.com/labstack/echo/v4"
 	v310 "github.com/richjyoung/echopen/openapi/v3.1.0"
@@ -11,7 +12,6 @@ type ResponseStructConfig struct {
 	Description string
 	Target      interface{}
 	JSON        bool
-	XML         bool
 }
 
 func WithResponse(code string, resp *v310.Response) RouteConfigFunc {
@@ -25,6 +25,20 @@ func WithResponseDescription(code string, description string) RouteConfigFunc {
 	return WithResponse(code, &v310.Response{
 		Description: description,
 	})
+}
+
+func WithResponseType(code string, description string, example interface{}) RouteConfigFunc {
+	return func(rw *RouteWrapper) *RouteWrapper {
+		rw.Operation.AddResponse(code, &v310.Response{
+			Description: description,
+			Content: map[string]*v310.MediaTypeObject{
+				echo.MIMEApplicationJSON: {
+					Schema: rw.API.TypeToSchemaRef(reflect.TypeOf(example)),
+				},
+			},
+		})
+		return rw
+	}
 }
 
 func WithResponseRef(code string, name string) RouteConfigFunc {
@@ -53,10 +67,6 @@ func WithResponseStructConfig(code string, config *ResponseStructConfig) RouteCo
 
 		if config.JSON {
 			content[echo.MIMEApplicationJSON] = &v310.MediaTypeObject{Schema: schema}
-		}
-
-		if config.XML {
-			content[echo.MIMEApplicationXML] = &v310.MediaTypeObject{Schema: schema}
 		}
 
 		rw.Operation.AddResponse(code, &v310.Response{

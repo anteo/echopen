@@ -67,10 +67,11 @@ func TestReflect(t *testing.T) {
 		{"float32", float32(42.0), `{"type":"number","format":"float"}`},
 		{"float64", float64(42.0), `{"type":"number","format":"double"}`},
 		{"bool", true, `{"type":"bool"}`},
-		{"map", map[string]interface{}{}, `{"type":"object"}`},
 		{"slice", []string{}, `{"type":"array","items":{"type":"string"}}`},
 		{"struct", TestStruct{}, `{"$ref":"#/components/schemas/TestStruct"}`},
 		{"struct_ptr", &TestStruct{}, `{"$ref":"#/components/schemas/TestStruct"}`},
+		{"map", map[string]interface{}{}, `{"type":"object"}`},
+		{"map_string", map[string]string{}, `{"type":"object","additionalProperties":{"type":"string"}}`},
 	}
 
 	for _, tc := range defs {
@@ -136,7 +137,7 @@ func TestReflectStruct(t *testing.T) {
 	for _, tc := range defs {
 		t.Run(tc.Name, func(t *testing.T) {
 			w := New("Test API", "1.0.0")
-			ref := w.StructTypeToSchema(reflect.TypeOf(tc.Target))
+			ref := w.StructTypeToSchema(reflect.TypeOf(tc.Target), "json")
 			buf, _ := json.Marshal(ref)
 			assert.Equal(t, tc.Expected, string(buf))
 		})

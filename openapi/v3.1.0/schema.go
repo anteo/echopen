@@ -36,11 +36,12 @@ type Schema struct {
 	MinContains *int `json:"minContains,omitempty" yaml:"minContains,omitempty"`
 
 	// Objects
-	Required          []string                `json:"required,omitempty" yaml:"required,omitempty"`
-	Properties        map[string]*Ref[Schema] `json:"properties,omitempty" yaml:"properties,omitempty"`
-	MaxProperties     *int                    `json:"maxProperties,omitempty" yaml:"maxProperties,omitempty"`
-	MinProperties     *int                    `json:"minProperties,omitempty" yaml:"minProperties,omitempty"`
-	DependentRequired interface{}             `json:"dependentRequired,omitempty" yaml:"dependentRequired,omitempty"`
+	Required             []string                `json:"required,omitempty" yaml:"required,omitempty"`
+	Properties           map[string]*Ref[Schema] `json:"properties,omitempty" yaml:"properties,omitempty"`
+	MaxProperties        *int                    `json:"maxProperties,omitempty" yaml:"maxProperties,omitempty"`
+	MinProperties        *int                    `json:"minProperties,omitempty" yaml:"minProperties,omitempty"`
+	DependentRequired    interface{}             `json:"dependentRequired,omitempty" yaml:"dependentRequired,omitempty"`
+	AdditionalProperties *Ref[Schema]            `json:"additionalProperties,omitempty" yaml:"additionalProperties,omitempty"`
 
 	AllOf []*Ref[Schema] `json:"allOf,omitempty" yaml:"allOf,omitempty"`
 

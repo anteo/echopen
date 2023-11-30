@@ -44,12 +44,34 @@ func WithRequestBodyStruct(description string, target interface{}) RouteConfigFu
 		})
 
 		rw.Operation.AddRequestBody(&v310.RequestBody{
-			Description: &description,
+			Description: description,
 			Content: map[string]*v310.MediaTypeObject{
 				echo.MIMEApplicationJSON: {Schema: rw.API.ToSchemaRef(target)},
 			},
 		})
 
+		return rw
+	}
+}
+
+func WithRequestBody(rb *v310.RequestBody) RouteConfigFunc {
+	return func(rw *RouteWrapper) *RouteWrapper {
+		rw.Operation.AddRequestBody(rb)
+		return rw
+	}
+}
+
+func WithRequestBodySchema(mime string, s *v310.Schema) RouteConfigFunc {
+	return func(rw *RouteWrapper) *RouteWrapper {
+		rw.Operation.AddRequestBody(&v310.RequestBody{
+			Content: map[string]*v310.MediaTypeObject{
+				mime: {
+					Schema: &v310.Ref[v310.Schema]{
+						Value: s,
+					},
+				},
+			},
+		})
 		return rw
 	}
 }

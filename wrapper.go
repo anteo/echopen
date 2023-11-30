@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"reflect"
 	"strings"
 
 	v310 "github.com/richjyoung/echopen/openapi/v3.1.0"
@@ -17,12 +18,16 @@ import (
 type APIWrapper struct {
 	Spec   *v310.Specification
 	Engine *echo.Echo
+
+	schemaMap map[reflect.Type]string
 }
 
 func New(title string, apiVersion string, config ...WrapperConfigFunc) *APIWrapper {
 	wrapper := &APIWrapper{
 		Spec:   v310.NewSpecification(),
 		Engine: echo.New(),
+
+		schemaMap: map[reflect.Type]string{},
 	}
 
 	wrapper.Spec.Info.Title = title
