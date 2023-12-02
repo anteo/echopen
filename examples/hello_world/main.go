@@ -5,16 +5,10 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/gommon/log"
 	"github.com/richjyoung/echopen"
 	v310 "github.com/richjyoung/echopen/openapi/v3.1.0"
 )
-
-const Description = `
-Hello World
-===========
-
-Very basic example with single route and schema.
-`
 
 func main() {
 	// Create a new echOpen wrapper
@@ -25,6 +19,8 @@ func main() {
 		echopen.WithSpecLicense(&v310.License{Name: "MIT", URL: "https://example.com/license"}),
 		echopen.WithSpecTag(&v310.Tag{Name: "hello_world", Description: "Hello World API Routes"}),
 	)
+
+	api.Engine.Logger.SetLevel(log.DEBUG)
 
 	// Hello World route
 	api.GET(
@@ -47,5 +43,6 @@ func main() {
 }
 
 func hello(c echo.Context) error {
+	c.Logger().Warn("test")
 	return c.String(http.StatusOK, "Hello, World!")
 }

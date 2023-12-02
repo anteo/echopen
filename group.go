@@ -10,19 +10,45 @@ import (
 
 type GroupWrapper struct {
 	API                  *APIWrapper
+	GroupWrapper         *GroupWrapper
 	Prefix               string
 	Middlewares          []echo.MiddlewareFunc
 	Tags                 []string
 	SecurityRequirements []*v310.SecurityRequirement
-	Group                *echo.Group
+	RouterGroup          *echo.Group
 }
 
+// Create a new sub-group with prefix and optional group-specific configuration
+func (g *GroupWrapper) Group(prefix string, config ...GroupConfigFunc) *GroupWrapper {
+	wrapper := &GroupWrapper{
+		Prefix:       prefix,
+		API:          g.API,
+		GroupWrapper: g,
+	}
+
+	// Apply config transforms
+	for _, configFunc := range config {
+		wrapper = configFunc(wrapper)
+	}
+
+	// Create the echo router group off the current group
+	group := g.RouterGroup.Group(prefix, wrapper.Middlewares...)
+	wrapper.RouterGroup = group
+	return wrapper
+}
+
+// Add a route to the group
 func (g *GroupWrapper) Add(method string, path string, handler echo.HandlerFunc, config ...RouteConfigFunc) *RouteWrapper {
 	// Construct a new operation for this path and method
 	op := &v310.Operation{}
 
 	// Get full path from group
-	fullPath := g.Prefix + path
+	fullPath := path
+	parentGroup := g
+	for parentGroup != nil {
+		fullPath = g.Prefix + fullPath
+		parentGroup = parentGroup.GroupWrapper
+	}
 
 	// Convert echo format to OpenAPI path
 	oapiPath := echoRouteToOpenAPI(fullPath)
@@ -59,20 +85,24 @@ func (g *GroupWrapper) Add(method string, path string, handler echo.HandlerFunc,
 
 	// Start populating return wrapper
 	wrapper := &RouteWrapper{
-		API:       g.API,
-		Group:     g,
-		Operation: op,
-		PathItem:  pathItem,
-		Handler:   handler,
+		API:               g.API,
+		Group:             g,
+		Operation:         op,
+		PathItem:          pathItem,
+		Handler:           handler,
+		RequestBodySchema: map[string]*v310.Schema{},
 	}
 
 	// Add group tags
-	wrapper = WithTags(g.Tags...)(wrapper)
-
-	for _, req := range g.SecurityRequirements {
-		for name, scopes := range *req {
-			wrapper = WithSecurityRequirement(name, scopes)(wrapper)
+	parentGroup = g
+	for parentGroup != nil {
+		wrapper = WithTags(parentGroup.Tags...)(wrapper)
+		for _, req := range parentGroup.SecurityRequirements {
+			for name, scopes := range *req {
+				wrapper = WithSecurityRequirement(name, scopes)(wrapper)
+			}
 		}
+		parentGroup = parentGroup.GroupWrapper
 	}
 
 	// Apply config transforms
@@ -81,7 +111,7 @@ func (g *GroupWrapper) Add(method string, path string, handler echo.HandlerFunc,
 	}
 
 	// Add the route in to the group (non-prefixed path)
-	wrapper.Route = g.Group.Add(method, path, wrapper.Handler, wrapper.Middlewares...)
+	wrapper.Route = g.RouterGroup.Add(method, path, wrapper.Handler, wrapper.Middlewares...)
 
 	// Ensure the operation ID is set, and the echo route is given the same name
 	if wrapper.Operation.OperationID == "" {

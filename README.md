@@ -1,3 +1,5 @@
+[![TODOs](https://badgen.net/https/api.tickgit.com/badgen/github.com/richjyoung/echopen)](https://www.tickgit.com/browse?repo=github.com/richjyoung/echopen)
+
 # echOpen
 
 Very thin wrapper around [echo](https://echo.labstack.com/) to generate OpenAPI v3.1 specs from API endpoints.
@@ -156,6 +158,8 @@ The returned `echo.Group` instance can be accessed from either the GroupWrapper 
 
 The same `Add` function for attaching routes to the group is provided on the GroupWrapper, and convenience methods for `CONNECT`, `DELETE`, `GET`, `HEAD`, `OPTIONS`, `PATCH`, `POST`, `PUT`, and `TRACE` follow the same function signature, minus the method.
 
+Groups can also be created under other groups, as well as from the top level engine.
+
 ## Configuration Functions
 
 - `WithGroupMiddlewares` - Provides a list of middlewares that will be passed to the underlying `echo.Group()` call.
@@ -167,34 +171,31 @@ The same `Add` function for attaching routes to the group is provided on the Gro
 Parameters can be provided via query, header, path or cookies.
 All of these can be automatically extracted from the request and inserted into the request context, throwing `ErrRequiredParameterMissing` if the required flag is set and the parameter is not supplied.
 
-| Location | RouteConfigFunc                               | Echo Context Key                    |
-| -------- | --------------------------------------------- | ----------------------------------- |
-| query    | `WithQueryParameter(*QueryParameterConfig)`   | `query.<name>` (string/[]string)\*  |
-| header   | `WithHeaderParameter(*HeaderParameterConfig)` | `header.<name>` (string/[]string)\* |
-| path     | `WithPathParameter(*PathParameterConfig)`     | `path.<name>` (string)              |
-| cookie   | `WithCookieParameter(*CookieParameterConfig)` | `cookie.<name>` (string)            |
+| Location | RouteConfigFunc                                     | Echo Context Key                    |
+| -------- | --------------------------------------------------- | ----------------------------------- |
+| header   | `WithHeaderParameterConfig(*HeaderParameterConfig)` | `header.<name>` (string/[]string)\* |
+| path     | `WithPathParameterConfig(*PathParameterConfig)`     | `path.<name>` (string)              |
+| cookie   | `WithCookieParameterConfig(*CookieParameterConfig)` | `cookie.<name>` (string)            |
 
 (\* Depending on the value of config field `AllowMultiple`. If false, only the first value is used. )
 
-In the case of header parameters, the config `Name` field and corresponding default context key placeholder is converted to the [canonical header key](https://pkg.go.dev/net/http#CanonicalHeaderKey).
+Each of these parameter functions also has a simplified form of the same name, omitting the `Config` prefix.
+This can be used where the simplified form is sufficient, complex cases may need the full config.
 
-Whilst the options struct allows for the schema to be specified, the value in the context will always be a string.
-The context key can be overridden using the `ContextKey` field in the config struct.
-Automatic type conversion or validation is not supported here.
+In the case of header parameters, the config `Name` field and corresponding default context key placeholder is converted to the [canonical header key](https://pkg.go.dev/net/http#CanonicalHeaderKey).
 
 To specify custom parameters with no automatic binding, use `WithParameter`.
 
-## Struct Binding
+## Query Binding
 
-Query, header, and path parameters can also be bound to a single struct with type conversion, which also allows schema extraction via reflection and validation.
+Query/Form parameters can be bound to a single struct with type conversion, which allows schema extraction via reflection and validation.
 
-| Location | RouteConfigFunc                        | Echo Context Key |
-| -------- | -------------------------------------- | ---------------- |
-| query    | `WithQueryStruct(target interface{})`  | `query`          |
-| header   | `WithHeaderStruct(target interface{})` | `header`         |
-| path     | `WithPathStruct(target interface{})`   | `path`           |
+| Location   | RouteConfigFunc                       | Echo Context Key |
+| ---------- | ------------------------------------- | ---------------- |
+| query      | `WithQueryStruct(target interface{})` | `query`          |
+| query/body | `WithFormStruct(target interface{})`  | `form`           |
 
-As this can only be used once per route, the context key cannot be overridden.
+As this should only be used once per route, multiple structs cannot be bound to the incoming query/body form data.
 The bound value stored in the context will be a pointer to a struct of the same type as the `target` argument.
 
 For example:

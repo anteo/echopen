@@ -15,9 +15,14 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+type Config struct {
+	DisableDefaultMiddleware bool
+}
+
 type APIWrapper struct {
 	Spec   *v310.Specification
 	Engine *echo.Echo
+	Config *Config
 
 	schemaMap map[reflect.Type]string
 }
@@ -26,6 +31,7 @@ func New(title string, apiVersion string, config ...WrapperConfigFunc) *APIWrapp
 	wrapper := &APIWrapper{
 		Spec:   v310.NewSpecification(),
 		Engine: echo.New(),
+		Config: &Config{},
 
 		schemaMap: map[reflect.Type]string{},
 	}
@@ -142,10 +148,12 @@ func (w *APIWrapper) ServeUI(path string, schemaPath string, uiVersion string) *
 	})
 }
 
+// Start starts an HTTP server
 func (w *APIWrapper) Start(addr string) error {
 	return w.Engine.Start(addr)
 }
 
+// Register a new route with the given method and path
 func (w *APIWrapper) Add(method string, path string, handler echo.HandlerFunc, config ...RouteConfigFunc) *RouteWrapper {
 	// Construct a new operation for this path and method
 	op := &v310.Operation{}
@@ -185,10 +193,11 @@ func (w *APIWrapper) Add(method string, path string, handler echo.HandlerFunc, c
 
 	// Start populating return wrapper
 	wrapper := &RouteWrapper{
-		API:       w,
-		Operation: op,
-		PathItem:  pathItem,
-		Handler:   handler,
+		API:               w,
+		Operation:         op,
+		PathItem:          pathItem,
+		Handler:           handler,
+		RequestBodySchema: map[string]*v310.Schema{},
 	}
 
 	// Set default operation ID
@@ -200,7 +209,11 @@ func (w *APIWrapper) Add(method string, path string, handler echo.HandlerFunc, c
 	}
 
 	// Add validation middleware to the start of the chain
-	middlewares := append([]echo.MiddlewareFunc{wrapper.validationMiddleware()}, wrapper.Middlewares...)
+	middlewares := []echo.MiddlewareFunc{}
+	if !w.Config.DisableDefaultMiddleware {
+		middlewares = append(middlewares, wrapper.middleware())
+	}
+	middlewares = append(middlewares, wrapper.Middlewares...)
 
 	// Add the route in to the echo engine
 	wrapper.Route = w.Engine.Add(method, path, wrapper.Handler, middlewares...)
@@ -211,6 +224,7 @@ func (w *APIWrapper) Add(method string, path string, handler echo.HandlerFunc, c
 	return wrapper
 }
 
+// Create a new group with prefix and optional group-specific configuration
 func (w *APIWrapper) Group(prefix string, config ...GroupConfigFunc) *GroupWrapper {
 	wrapper := &GroupWrapper{
 		Prefix: prefix,
@@ -223,7 +237,7 @@ func (w *APIWrapper) Group(prefix string, config ...GroupConfigFunc) *GroupWrapp
 	}
 
 	group := w.Engine.Group(prefix, wrapper.Middlewares...)
-	wrapper.Group = group
+	wrapper.RouterGroup = group
 	return wrapper
 }
 
@@ -268,6 +282,10 @@ func DefaultErrorHandler(err error, c echo.Context) {
 	} else if errors.Is(err, ErrRequiredParameterMissing) {
 		c.JSON(http.StatusBadRequest, map[string]interface{}{
 			"message": http.StatusText(http.StatusBadRequest),
+		})
+	} else if errors.Is(err, ErrContentTypeNotSupported) {
+		c.JSON(http.StatusUnsupportedMediaType, map[string]interface{}{
+			"message": http.StatusText(http.StatusUnsupportedMediaType),
 		})
 	} else if he, ok := err.(*echo.HTTPError); ok {
 		if c.Echo().Debug && he.Internal != nil {

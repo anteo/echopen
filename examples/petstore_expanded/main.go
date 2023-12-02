@@ -1,8 +1,6 @@
 package main
 
 import (
-	"reflect"
-
 	"github.com/labstack/echo/v4"
 	"github.com/richjyoung/echopen"
 	v310 "github.com/richjyoung/echopen/openapi/v3.1.0"
@@ -136,7 +134,7 @@ func main() {
 	)
 
 	petGroup.GET(
-		"/{petId}",
+		"/:petId",
 		noop,
 		echopen.WithOperationID("getPetById"),
 		echopen.WithSummary("Find pet by ID"),
@@ -150,7 +148,7 @@ func main() {
 	)
 
 	petGroup.POST(
-		"/{petId}",
+		"/:petId",
 		noop,
 		echopen.WithOperationID("updatePetWithForm"),
 		echopen.WithPathParameter("petId", "ID of pet to return", int64(1234)),
@@ -160,22 +158,19 @@ func main() {
 	)
 
 	petGroup.DELETE(
-		"/{petId}",
+		"/:petId",
 		noop,
 		echopen.WithOperationID("deletePet"),
 		echopen.WithSummary("Deletes a pet"),
 		echopen.WithPathParameter("petId", "Pet id to delete", int64(1234)),
-		echopen.WithHeaderParameter(&echopen.HeaderParameterConfig{
-			Name:   "api_key",
-			Schema: api.TypeToSchema(reflect.TypeOf("")),
-		}),
+		echopen.WithHeaderParameter("api_key", "", ""),
 		echopen.WithSecurityRequirement("petstore_auth", []string{"write:pets", "read:pets"}),
 		echopen.WithResponseDescription("400", "Invalid ID supplied"),
 		echopen.WithResponseDescription("404", "Pet not found"),
 	)
 
 	petGroup.POST(
-		"/{petId}/uploadImage",
+		"/:petId/uploadImage",
 		noop,
 		echopen.WithOperationID("uploadFile"),
 		echopen.WithSummary("uploads an image"),
@@ -211,24 +206,24 @@ func main() {
 	)
 
 	store.GET(
-		"/order/{orderId}",
+		"/order/:orderId",
 		noop,
 		echopen.WithOperationID("getOrderById"),
 		echopen.WithSummary("Find purchase order by ID"),
 		echopen.WithDescription("For valid response try integer IDs with value >= 1 and <= 10. Other values will generated exceptions"),
-		echopen.WithPathStruct(GetOrderByIDPath{}),
+		echopen.WithPathParameter("orderId", "ID of order that needs to be fetched", int64(0)),
 		echopen.WithResponseStruct("200", "successful operation", Order{}),
 		echopen.WithResponseDescription("400", "Invalid ID supplied"),
 		echopen.WithResponseDescription("404", "Order not found"),
 	)
 
 	store.DELETE(
-		"/order/{orderId}",
+		"/order/:orderId",
 		noop,
 		echopen.WithOperationID("deleteOrder"),
 		echopen.WithSummary("Delete purchase order by ID"),
 		echopen.WithDescription("For valid response try integer IDs with positive integer value. Negative or non-integer values will generate API errors"),
-		echopen.WithPathStruct(DeleteOrderByIDPath{}),
+		echopen.WithPathParameter("orderId", "ID of the order that needs to be deleted", int64(0)),
 		echopen.WithResponseDescription("400", "Invalid ID supplied"),
 		echopen.WithResponseDescription("404", "Order not found"),
 	)
@@ -282,7 +277,7 @@ func main() {
 	)
 
 	user.GET(
-		"/{username}",
+		"/:username",
 		noop,
 		echopen.WithOperationID("getUserByName"),
 		echopen.WithSummary("Get user by user name"),
@@ -293,7 +288,7 @@ func main() {
 	)
 
 	user.PUT(
-		"/{username}",
+		"/:username",
 		noop,
 		echopen.WithOperationID("updateUser"),
 		echopen.WithSummary("This can only be done by the logged in user."),
@@ -304,7 +299,7 @@ func main() {
 	)
 
 	user.DELETE(
-		"/{username}",
+		"/:username",
 		noop,
 		echopen.WithOperationID("deleteUser"),
 		echopen.WithSummary("This can only be done by the logged in user."),

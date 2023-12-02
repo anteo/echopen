@@ -310,8 +310,6 @@ paths:
                   schema:
                     type: integer
                     format: int64
-                    maximum: 10
-                    minimum: 1
             responses:
                 "200":
                     description: successful operation
@@ -337,7 +335,6 @@ paths:
                   schema:
                     type: integer
                     format: int64
-                    minimum: 1
             responses:
                 "400":
                     description: Invalid ID supplied

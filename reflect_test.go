@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"testing"
 
+	v310 "github.com/richjyoung/echopen/openapi/v3.1.0"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -49,37 +50,42 @@ func TestReflect(t *testing.T) {
 		Name     string
 		Target   interface{}
 		Expected string
+		Kind     reflect.Kind
 	}
 
 	defs := []tcd{
-		{"str", "test_string", `{"type":"string"}`},
-		{"str_ptr", PtrTo("test_string"), `{"type":"string"}`},
-		{"int", 42, `{"type":"integer"}`},
-		{"int_ptr", PtrTo(42), `{"type":"integer"}`},
-		{"uint8", uint8(42), `{"type":"integer","format":"char"}`},
-		{"uint16", uint16(42), `{"type":"integer","format":"uint16"}`},
-		{"uint32", uint32(42), `{"type":"integer","format":"uint32"}`},
-		{"uint64", uint64(42), `{"type":"integer","format":"uint64"}`},
-		{"int8", int8(42), `{"type":"integer","format":"int8"}`},
-		{"int16", int16(42), `{"type":"integer","format":"int16"}`},
-		{"int32", int32(42), `{"type":"integer","format":"int32"}`},
-		{"int64", int64(42), `{"type":"integer","format":"int64"}`},
-		{"float32", float32(42.0), `{"type":"number","format":"float"}`},
-		{"float64", float64(42.0), `{"type":"number","format":"double"}`},
-		{"bool", true, `{"type":"bool"}`},
-		{"slice", []string{}, `{"type":"array","items":{"type":"string"}}`},
-		{"struct", TestStruct{}, `{"$ref":"#/components/schemas/TestStruct"}`},
-		{"struct_ptr", &TestStruct{}, `{"$ref":"#/components/schemas/TestStruct"}`},
-		{"map", map[string]interface{}{}, `{"type":"object"}`},
-		{"map_string", map[string]string{}, `{"type":"object","additionalProperties":{"type":"string"}}`},
+		{"str", "test_string", `{"type":"string"}`, reflect.String},
+		{"str_ptr", PtrTo("test_string"), `{"type":"string"}`, reflect.String},
+		{"int", 42, `{"type":"integer"}`, reflect.Int},
+		{"int_ptr", PtrTo(42), `{"type":"integer"}`, reflect.Int},
+		{"uint8", uint8(42), `{"type":"integer","format":"char"}`, reflect.Uint8},
+		{"uint16", uint16(42), `{"type":"integer","format":"uint16"}`, reflect.Uint16},
+		{"uint32", uint32(42), `{"type":"integer","format":"uint32"}`, reflect.Uint32},
+		{"uint64", uint64(42), `{"type":"integer","format":"uint64"}`, reflect.Uint64},
+		{"int8", int8(42), `{"type":"integer","format":"int8"}`, reflect.Int8},
+		{"int16", int16(42), `{"type":"integer","format":"int16"}`, reflect.Int16},
+		{"int32", int32(42), `{"type":"integer","format":"int32"}`, reflect.Int32},
+		{"int64", int64(42), `{"type":"integer","format":"int64"}`, reflect.Int64},
+		{"float32", float32(42.0), `{"type":"number","format":"float"}`, reflect.Float32},
+		{"float64", float64(42.0), `{"type":"number","format":"double"}`, reflect.Float64},
+		{"bool", true, `{"type":"bool"}`, reflect.Bool},
+		{"slice", []string{}, `{"type":"array","items":{"type":"string"}}`, reflect.Slice},
+		{"struct", TestStruct{}, `{"type":"object","required":["test"],"properties":{"test":{"type":"string"}}}`, reflect.Struct},
+		{"struct_ptr", &TestStruct{}, `{"type":"object","required":["test"],"properties":{"test":{"type":"string"}}}`, reflect.Struct},
+		{"map", map[string]interface{}{}, `{"type":"object"}`, reflect.Map},
+		{"map_string", map[string]string{}, `{"type":"object","additionalProperties":{"type":"string"}}`, reflect.Map},
 	}
 
 	for _, tc := range defs {
 		t.Run(tc.Name, func(t *testing.T) {
 			w := New("Test API", "1.0.0")
 			ref := w.ToSchemaRef(tc.Target)
-			buf, _ := json.Marshal(ref)
+			schema := ref.DeRef(w.Spec.Components).(*v310.Schema)
+			buf, _ := json.Marshal(schema)
 			assert.Equal(t, tc.Expected, string(buf))
+			if ref.Value != nil {
+				assert.Equal(t, tc.Kind, schema.SourceType.Kind())
+			}
 		})
 	}
 }

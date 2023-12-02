@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/gommon/log"
 	"github.com/richjyoung/echopen"
 	v310 "github.com/richjyoung/echopen/openapi/v3.1.0"
 )
@@ -46,22 +47,38 @@ func main() {
 		echopen.WithSpecTag(&v310.Tag{Name: "param", Description: "Routes with params"}),
 	)
 
+	api.Engine.Logger.SetLevel(log.DEBUG)
+
 	// Add a group
 	helloGroup := api.Group("/hello", echopen.WithGroupTags("hello_world"))
-	helloGroup.GET("", hello)
+
+	helloGroup.GET(
+		"",
+		hello,
+		echopen.WithResponseDescription("200", "Successful response"),
+	)
+
 	helloGroup.GET(
 		"/:id",
 		helloID,
 		echopen.WithTags("param"),
-		// echopen.WithPathParameter(&echopen.PathParameterConfig{
-		// 	Name:        "id",
-		// 	Description: "ID Parameter",
-		// }),
+		echopen.WithPathParameter("id", "ID Parameter", 1234),
+		echopen.WithResponseDescription("200", "Successful response"),
 	)
 
-	helloGroup.GET("/query", helloQuery, echopen.WithQueryStruct(QueryParams{}))
-	helloGroup.PATCH("/body", helloBody, echopen.WithRequestBodyStruct("Body params", RequestBody{}))
-	helloGroup.PATCH("/body/settings", helloQuery, echopen.WithRequestBodyStruct("Body params", RequestBodySettings{}))
+	helloGroup.GET(
+		"/query",
+		helloQuery,
+		echopen.WithQueryStruct(QueryParams{}),
+		echopen.WithResponseDescription("200", "Successful response"),
+	)
+
+	helloGroup.PATCH(
+		"/body",
+		helloBody,
+		echopen.WithRequestBodyStruct("Body params", RequestBody{}),
+		echopen.WithResponseDescription("200", "Successful response"),
+	)
 
 	// Serve the generated schema
 	api.ServeJSONSpec("/openapi.json")
@@ -76,6 +93,7 @@ func main() {
 }
 
 func hello(c echo.Context) error {
+	c.Logger().Info("hello")
 	return c.String(http.StatusOK, "Hello, World!")
 }
 

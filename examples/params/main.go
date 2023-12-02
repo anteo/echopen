@@ -48,7 +48,7 @@ func main() {
 		"/params/:id",
 		getParamsByID,
 		echopen.WithTags("params"),
-		echopen.WithPathStruct(PathParams{}),
+		echopen.WithPathParameter("id", "ID", int(42)),
 		echopen.WithQueryStruct(QueryParams{}),
 		echopen.WithResponseStruct(fmt.Sprint(http.StatusOK), "Default response", ValidResponseBody{}),
 		echopen.WithResponseStruct(fmt.Sprint(http.StatusBadRequest), "Bad request", ErrorResponseBody{}),

@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+	"time"
 
 	v310 "github.com/richjyoung/echopen/openapi/v3.1.0"
 )
@@ -57,42 +58,45 @@ func (w *APIWrapper) TypeToSchemaRef(typ reflect.Type) *v310.Ref[v310.Schema] {
 func (w *APIWrapper) TypeToSchema(typ reflect.Type) *v310.Schema {
 	switch typ.Kind() {
 	case reflect.String:
-		return &v310.Schema{Type: "string"}
+		return &v310.Schema{Type: "string", SourceType: typ}
 	case reflect.Int8:
-		return &v310.Schema{Type: "integer", Format: "int8"}
+		return &v310.Schema{Type: "integer", Format: "int8", SourceType: typ}
 	case reflect.Int16:
-		return &v310.Schema{Type: "integer", Format: "int16"}
+		return &v310.Schema{Type: "integer", Format: "int16", SourceType: typ}
 	case reflect.Int32:
-		return &v310.Schema{Type: "integer", Format: "int32"}
+		return &v310.Schema{Type: "integer", Format: "int32", SourceType: typ}
 	case reflect.Int64:
-		return &v310.Schema{Type: "integer", Format: "int64"}
+		return &v310.Schema{Type: "integer", Format: "int64", SourceType: typ}
 	case reflect.Uint8:
-		return &v310.Schema{Type: "integer", Format: "char"}
+		return &v310.Schema{Type: "integer", Format: "char", SourceType: typ}
 	case reflect.Uint16:
-		return &v310.Schema{Type: "integer", Format: "uint16"}
+		return &v310.Schema{Type: "integer", Format: "uint16", SourceType: typ}
 	case reflect.Uint32:
-		return &v310.Schema{Type: "integer", Format: "uint32"}
+		return &v310.Schema{Type: "integer", Format: "uint32", SourceType: typ}
 	case reflect.Uint64:
-		return &v310.Schema{Type: "integer", Format: "uint64"}
+		return &v310.Schema{Type: "integer", Format: "uint64", SourceType: typ}
 	case reflect.Int, reflect.Uint:
-		return &v310.Schema{Type: "integer"}
+		return &v310.Schema{Type: "integer", SourceType: typ}
 	case reflect.Bool:
-		return &v310.Schema{Type: "bool"}
+		return &v310.Schema{Type: "bool", SourceType: typ}
 	case reflect.Float32:
-		return &v310.Schema{Type: "number", Format: "float"}
+		return &v310.Schema{Type: "number", Format: "float", SourceType: typ}
 	case reflect.Float64:
-		return &v310.Schema{Type: "number", Format: "double"}
+		return &v310.Schema{Type: "number", Format: "double", SourceType: typ}
 	case reflect.Map:
 		if typ.Elem().Kind() != reflect.Interface {
-			return &v310.Schema{Type: "object", AdditionalProperties: w.TypeToSchemaRef(typ.Elem())}
+			return &v310.Schema{Type: "object", AdditionalProperties: w.TypeToSchemaRef(typ.Elem()), SourceType: typ}
 		}
-		return &v310.Schema{Type: "object"}
+		return &v310.Schema{Type: "object", SourceType: typ}
 	case reflect.Interface:
-		return &v310.Schema{Type: "object"}
+		return &v310.Schema{Type: "object", SourceType: typ}
 	case reflect.Array, reflect.Slice:
-		return &v310.Schema{Type: "array", Items: w.TypeToSchemaRef(typ.Elem())}
+		return &v310.Schema{Type: "array", Items: w.TypeToSchemaRef(typ.Elem()), SourceType: typ}
 	case reflect.Struct:
 		// Get schema for struct including contained fields (assume json)
+		if typ == reflect.TypeOf(time.Time{}) {
+			return &v310.Schema{Type: "string", Format: "date-time", SourceType: typ}
+		}
 		return w.StructTypeToSchema(typ, "json")
 	case reflect.Pointer:
 		// Get schema for pointed type
@@ -109,11 +113,13 @@ func (w *APIWrapper) StructTypeToSchema(target reflect.Type, nameTag string) *v3
 	s := &v310.Schema{
 		Type:       "object",
 		Properties: map[string]*v310.Ref[v310.Schema]{},
+		SourceType: target,
 	}
 
 	// Schema object for composition members
 	a := &v310.Schema{
-		AllOf: []*v310.Ref[v310.Schema]{},
+		AllOf:      []*v310.Ref[v310.Schema]{},
+		SourceType: target,
 	}
 
 	// Loop over all struct fields

@@ -31,6 +31,10 @@ paths:
                   in: path
                   description: ID Parameter
                   required: true
+                  schema:
+                    type: integer
+                  examples:
+                    - value: 1234
     /hello/body:
         patch:
             operationId: patchBody
@@ -62,6 +66,7 @@ paths:
                 - name: offset
                   in: query
                   description: Offset into results
+                  required: true
                   style: form
                   schema:
                     type: integer
