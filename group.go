@@ -110,12 +110,19 @@ func (g *GroupWrapper) Add(method string, path string, handler echo.HandlerFunc,
 		wrapper = configFunc(wrapper)
 	}
 
+	// Add validation middleware to the start of the chain
+	middlewares := []echo.MiddlewareFunc{}
+	if !g.API.Config.DisableDefaultMiddleware {
+		middlewares = append(middlewares, wrapper.middleware())
+	}
+	middlewares = append(middlewares, wrapper.Middlewares...)
+
 	// Add the route in to the group (non-prefixed path)
-	wrapper.Route = g.RouterGroup.Add(method, path, wrapper.Handler, wrapper.Middlewares...)
+	wrapper.Route = g.RouterGroup.Add(method, path, wrapper.Handler, middlewares...)
 
 	// Ensure the operation ID is set, and the echo route is given the same name
 	if wrapper.Operation.OperationID == "" {
-		wrapper.Operation.OperationID = genOpID(method, path)
+		wrapper.Operation.OperationID = genOpID(method, fullPath)
 	}
 	wrapper.Route.Name = wrapper.Operation.OperationID
 

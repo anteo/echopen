@@ -38,7 +38,7 @@ func main() {
 		echopen.WithOperationID("addPet"),
 		echopen.WithDescription("Creates a new pet in the store. Duplicates are allowed"),
 		echopen.WithTags("pets"),
-		echopen.WithRequestBodyStruct("Pet to add to the store", NewPet{}),
+		echopen.WithRequestBodyStruct(echo.MIMEApplicationJSON, "Pet to add to the store", NewPet{}),
 		echopen.WithResponseRef(fmt.Sprint(http.StatusOK), "PetResponse"),
 		echopen.WithResponseRef("default", "UnexpectedErrorResponse"),
 	)
@@ -83,7 +83,7 @@ func main() {
 
 	// Serve the generated schema
 	api.ServeYAMLSpec("/openapi.yml")
-	api.ServeUI("/", "/openapi.yml", "5.10.3")
+	api.ServeSwaggerUI("/", "/openapi.yml", "5.10.3")
 
 	// Write the full generated spec
 	api.WriteYAMLSpec("openapi_out.yml")

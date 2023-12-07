@@ -45,7 +45,7 @@ Sed tempus felis lobortis leo pulvinar rutrum. Nam mattis velit nisl, eu condime
 		addPet,
 		echopen.WithOperationID("addPet"),
 		echopen.WithDescription("Creates a new pet in the store. Duplicates are allowed"),
-		echopen.WithRequestBodyStruct("Pet to add to the store", NewPet{}),
+		echopen.WithRequestBodyStruct(echo.MIMEApplicationJSON, "Pet to add to the store", NewPet{}),
 		echopen.WithResponseStruct(fmt.Sprint(http.StatusOK), "pet response", Pet{}),
 		echopen.WithResponseStruct("default", "unexpected error", Error{}),
 	)
@@ -86,7 +86,7 @@ Sed tempus felis lobortis leo pulvinar rutrum. Nam mattis velit nisl, eu condime
 
 	// Serve the generated schema
 	api.ServeYAMLSpec("/openapi.yml")
-	api.ServeUI("/", "/openapi.yml", "5.10.3")
+	api.ServeSwaggerUI("/", "/openapi.yml", "5.10.3")
 
 	// Write the full generated spec
 	api.WriteYAMLSpec("openapi_out.yml")

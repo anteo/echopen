@@ -40,7 +40,7 @@ func main() {
 	api.ServeYAMLSpec("/openapi.yml", echopen.ExcludeTags("hidden"))
 	api.ServeYAMLSpec("/openapi_hidden_only.yml", echopen.IncludeTags("hidden"))
 	api.ServeYAMLSpec("/openapi_all.yml")
-	api.ServeUI("/", "/openapi.yml", "5.10.3")
+	api.ServeSwaggerUI("/", "/openapi.yml", "5.10.3")
 
 	// Write the full generated spec
 	api.WriteYAMLSpec("openapi_out.yml")

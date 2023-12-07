@@ -76,14 +76,14 @@ func main() {
 	helloGroup.PATCH(
 		"/body",
 		helloBody,
-		echopen.WithRequestBodyStruct("Body params", RequestBody{}),
+		echopen.WithRequestBodyStruct(echo.MIMEApplicationJSON, "Body params", RequestBody{}),
 		echopen.WithResponseDescription("200", "Successful response"),
 	)
 
 	// Serve the generated schema
 	api.ServeJSONSpec("/openapi.json")
 	api.ServeYAMLSpec("/openapi.yml")
-	api.ServeUI("/", "/openapi.yml", "5.10.3")
+	api.ServeSwaggerUI("/", "/openapi.yml", "5.10.3")
 
 	// Write the full generated spec
 	api.WriteYAMLSpec("openapi_out.yml")

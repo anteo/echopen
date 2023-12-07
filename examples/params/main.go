@@ -57,7 +57,7 @@ func main() {
 
 	// Serve the generated schema
 	api.ServeYAMLSpec("/openapi.yml")
-	api.ServeUI("/", "/openapi.yml", "5.10.3")
+	api.ServeSwaggerUI("/", "/openapi.yml", "5.10.3")
 
 	// Write the full generated spec
 	api.WriteYAMLSpec("openapi_out.yml")

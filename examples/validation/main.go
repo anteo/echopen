@@ -43,14 +43,14 @@ func main() {
 	api.POST(
 		"/validate",
 		validate,
-		echopen.WithRequestBodyStruct("Request parameters", Request{}),
+		echopen.WithRequestBodyStruct(echo.MIMEApplicationJSON, "Request parameters", Request{}),
 		echopen.WithResponseStruct(fmt.Sprint(http.StatusOK), "Successful response", Response{}),
 		echopen.WithResponseStruct("default", "Error response", Error{}),
 	)
 
 	// Serve the generated schema
 	api.ServeYAMLSpec("/openapi.yml")
-	api.ServeUI("/", "/openapi.yml", "5.10.3")
+	api.ServeSwaggerUI("/", "/openapi.yml", "5.10.3")
 
 	// Write the full generated spec
 	api.WriteYAMLSpec("openapi_out.yml")

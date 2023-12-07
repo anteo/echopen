@@ -153,7 +153,7 @@ func main() {
 		echopen.WithOperationID("updatePetWithForm"),
 		echopen.WithPathParameter("petId", "ID of pet to return", int64(1234)),
 		echopen.WithSecurityRequirement("petstore_auth", []string{"write:pets", "read:pets"}),
-		echopen.WithRequestBodyStruct("", UpdatePet{}),
+		echopen.WithRequestBodyStruct(echo.MIMEApplicationJSON, "", UpdatePet{}),
 		echopen.WithResponseDescription("405", "Invalid input"),
 	)
 
@@ -200,7 +200,7 @@ func main() {
 		noop,
 		echopen.WithOperationID("placeOrder"),
 		echopen.WithSummary("Place an order for a pet"),
-		echopen.WithRequestBodyStruct("order placed for purchasing the pet", Order{}),
+		echopen.WithRequestBodyStruct(echo.MIMEApplicationJSON, "order placed for purchasing the pet", Order{}),
 		echopen.WithResponseStruct("200", "successful operation", Order{}),
 		echopen.WithResponseDescription("400", "Invalid Order"),
 	)
@@ -236,7 +236,7 @@ func main() {
 		echopen.WithOperationID("createUser"),
 		echopen.WithSummary("Create user"),
 		echopen.WithDescription("This can only be done by the logged in user."),
-		echopen.WithRequestBodyStruct("Created user object", User{}),
+		echopen.WithRequestBodyStruct(echo.MIMEApplicationJSON, "Created user object", User{}),
 		echopen.WithResponseDescription("default", "successful operation"),
 	)
 
@@ -293,7 +293,7 @@ func main() {
 		echopen.WithOperationID("updateUser"),
 		echopen.WithSummary("This can only be done by the logged in user."),
 		echopen.WithPathParameter("username", "name that need to be updated", "username"),
-		echopen.WithRequestBodyStruct("Updated user object", User{}),
+		echopen.WithRequestBodyStruct(echo.MIMEApplicationJSON, "Updated user object", User{}),
 		echopen.WithResponseDescription("400", "Invalid user supplied"),
 		echopen.WithResponseDescription("404", "User not found"),
 	)
@@ -310,7 +310,7 @@ func main() {
 
 	// Serve the generated schema
 	api.ServeYAMLSpec("/openapi.yml")
-	api.ServeUI("/", "/openapi.yml", "5.10.3")
+	api.ServeSwaggerUI("/", "/openapi.yml", "5.10.3")
 
 	// Write the full generated spec
 	api.WriteYAMLSpec("openapi_out.yml")

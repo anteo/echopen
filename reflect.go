@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gofrs/uuid"
 	v310 "github.com/richjyoung/echopen/openapi/v3.1.0"
 )
 
@@ -28,26 +29,30 @@ func (w *APIWrapper) TypeToSchemaRef(typ reflect.Type) *v310.Ref[v310.Schema] {
 		// Return a SchemaRef for the pointed value instead
 		return w.TypeToSchemaRef(typ.Elem())
 	} else if typ.Kind() == reflect.Struct {
-		// Check if the struct has been seen before
-		if ref, exists := w.schemaMap[typ]; !exists {
-			// Check for anonymous structs
-			name := typ.Name()
-			if name != "" {
-				// Named structs can be stored in the Schema library and referenced multiple times
-				w.Spec.GetComponents().AddSchema(name, w.TypeToSchema(typ))
-				w.schemaMap[typ] = fmt.Sprintf("#/components/schemas/%s", name)
+		schema := w.TypeToSchema(typ)
 
-				// Return a reference to the schema component
-				return &v310.Ref[v310.Schema]{
-					Ref: fmt.Sprintf("#/components/schemas/%s", name),
+		if schema.Type == "object" {
+			// Check if the struct has been seen before
+			if ref, exists := w.schemaMap[typ]; !exists {
+				// Check for anonymous structs
+				name := typ.Name()
+				if name != "" {
+					// Named structs can be stored in the Schema library and referenced multiple times
+					w.Spec.GetComponents().AddSchema(name, w.TypeToSchema(typ))
+					w.schemaMap[typ] = fmt.Sprintf("#/components/schemas/%s", name)
+
+					// Return a reference to the schema component
+					return &v310.Ref[v310.Schema]{
+						Ref: fmt.Sprintf("#/components/schemas/%s", name),
+					}
 				}
+			} else {
+				return &v310.Ref[v310.Schema]{Ref: ref}
 			}
-		} else {
-			return &v310.Ref[v310.Schema]{Ref: ref}
 		}
 
-		// Anonymous struct, return actual schema instead
-		return &v310.Ref[v310.Schema]{Value: w.TypeToSchema(typ)}
+		// Anonymous struct or not an object type, return actual schema instead
+		return &v310.Ref[v310.Schema]{Value: schema}
 	} else {
 		// Not a pointer or a struct,
 		return &v310.Ref[v310.Schema]{Value: w.TypeToSchema(typ)}
@@ -78,7 +83,7 @@ func (w *APIWrapper) TypeToSchema(typ reflect.Type) *v310.Schema {
 	case reflect.Int, reflect.Uint:
 		return &v310.Schema{Type: "integer", SourceType: typ}
 	case reflect.Bool:
-		return &v310.Schema{Type: "bool", SourceType: typ}
+		return &v310.Schema{Type: "boolean", SourceType: typ}
 	case reflect.Float32:
 		return &v310.Schema{Type: "number", Format: "float", SourceType: typ}
 	case reflect.Float64:
@@ -91,6 +96,9 @@ func (w *APIWrapper) TypeToSchema(typ reflect.Type) *v310.Schema {
 	case reflect.Interface:
 		return &v310.Schema{Type: "object", SourceType: typ}
 	case reflect.Array, reflect.Slice:
+		if typ == reflect.TypeOf(uuid.UUID{}) {
+			return &v310.Schema{Type: "string", Format: "uuid", SourceType: typ}
+		}
 		return &v310.Schema{Type: "array", Items: w.TypeToSchemaRef(typ.Elem()), SourceType: typ}
 	case reflect.Struct:
 		// Get schema for struct including contained fields (assume json)

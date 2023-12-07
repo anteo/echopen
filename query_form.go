@@ -20,17 +20,10 @@ func WithQueryStruct(target interface{}) RouteConfigFunc {
 		rw.QuerySchema = s
 
 		for name, prop := range s.Properties {
-			required := false
-			for _, reqd := range s.Required {
-				if name == reqd {
-					required = true
-					break
-				}
-			}
 			rw.Operation.AddParameter(&v310.Parameter{
 				Name:        name,
 				In:          "query",
-				Required:    required,
+				Required:    false,
 				Description: prop.Value.Description,
 				Style:       "form",
 				Schema: &v310.Schema{

@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/gofrs/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/richjyoung/echopen"
 	"github.com/stretchr/testify/assert"
@@ -93,6 +94,22 @@ func TestRouteParamParseInt(t *testing.T) {
 	assert.Equal(t, 200, res.Result().StatusCode)
 }
 
+func TestRouteParamParseUUID(t *testing.T) {
+	api := echopen.New("Test", "1.0.0")
+	api.GET(
+		"/:id",
+		func(c echo.Context) error {
+			p := c.Get("path.id")
+			assert.IsType(t, uuid.Must(uuid.NewV4()), p)
+			return c.JSON(200, map[string]interface{}{"id": p})
+		},
+		echopen.WithPathParameter("id", "ID", uuid.Must(uuid.NewV4())),
+	)
+
+	_, res := executeRequest(api, http.MethodGet, "/11c7810d-6627-497a-91e9-e3dc4812ce30", nil)
+	assert.Equal(t, 200, res.Result().StatusCode)
+}
+
 func TestRouteParamParseOverflow(t *testing.T) {
 	api := echopen.New("Test", "1.0.0")
 	api.GET(
@@ -167,9 +184,10 @@ func TestRouteParamEmptyExample(t *testing.T) {
 
 func TestRouteQueryStruct(t *testing.T) {
 	type QueryStruct struct {
-		Limit  int      `query:"limit"`
-		Offset int      `query:"offset"`
-		Tags   []string `query:"tags"`
+		Limit   int      `query:"limit"`
+		Offset  int      `query:"offset"`
+		Tags    []string `query:"tags"`
+		Deleted bool     `query:"deleted"`
 	}
 
 	api := echopen.New("Test", "1.0.0")
@@ -180,12 +198,13 @@ func TestRouteQueryStruct(t *testing.T) {
 			assert.Equal(t, 100, qry.Limit)
 			assert.Equal(t, 20, qry.Offset)
 			assert.Equal(t, []string{"foo", "bar"}, qry.Tags)
+			assert.Equal(t, true, qry.Deleted)
 			return c.NoContent(204)
 		},
 		echopen.WithQueryStruct(QueryStruct{}),
 	)
 
-	_, res := executeRequest(api, http.MethodGet, "/?limit=100&offset=20&tags=foo&tags=bar", nil)
+	_, res := executeRequest(api, http.MethodGet, "/?limit=100&offset=20&tags=foo&tags=bar&deleted=true", nil)
 	assert.Equal(t, 204, res.Result().StatusCode)
 }
 

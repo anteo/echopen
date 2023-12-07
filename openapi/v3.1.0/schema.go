@@ -4,6 +4,8 @@ import (
 	"reflect"
 	"strconv"
 	"time"
+
+	"github.com/gofrs/uuid"
 )
 
 // 4.8.24 https://spec.openapis.org/oas/v3.1.0#schema-object
@@ -93,6 +95,12 @@ func (s *Schema) FromString(val string) interface{} {
 		switch s.Format {
 		case "date-time":
 			t, err := time.Parse(time.RFC3339, val)
+			if err != nil {
+				return nil
+			}
+			return t
+		case "uuid":
+			t, err := uuid.FromString(val)
 			if err != nil {
 				return nil
 			}

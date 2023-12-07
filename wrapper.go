@@ -110,7 +110,7 @@ func (w *APIWrapper) ServeJSONSpec(path string, filters ...SpecFilterFunc) *echo
 	return w.Engine.GET(path, handler)
 }
 
-func (w *APIWrapper) ServeUI(path string, schemaPath string, uiVersion string) *echo.Route {
+func (w *APIWrapper) ServeSwaggerUI(path string, schemaPath string, version string) *echo.Route {
 	return w.Engine.GET(path, func(c echo.Context) error {
 		return c.HTML(http.StatusOK, fmt.Sprintf(`
 			<!DOCTYPE html>
@@ -144,7 +144,27 @@ func (w *APIWrapper) ServeUI(path string, schemaPath string, uiVersion string) *
 					</script>
 				</body>
 			</html>
-		`, w.Spec.Info.Title, schemaPath, uiVersion))
+		`, w.Spec.Info.Title, schemaPath, version))
+	})
+}
+
+func (w *APIWrapper) ServeRapidoc(path string, schemaPath string) *echo.Route {
+	return w.Engine.GET(path, func(c echo.Context) error {
+		return c.HTML(http.StatusOK, fmt.Sprintf(`
+			<!doctype html> <!-- Important: must specify -->
+			<html>
+			<head>
+				<meta charset="utf-8"> <!-- Important: rapi-doc uses utf8 characters -->
+				<script type="module" src="https://unpkg.com/rapidoc/dist/rapidoc-min.js"></script>
+			</head>
+			<body>
+				<rapi-doc
+					spec-url="%[1]s"
+					theme = "dark"
+				> </rapi-doc>
+			</body>
+			</html>
+		`, schemaPath))
 	})
 }
 
