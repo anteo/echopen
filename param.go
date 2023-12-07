@@ -65,8 +65,8 @@ func WithHeaderParameterConfig(c *HeaderParameterConfig) RouteConfigFunc {
 
 func WithCookieParameterConfig(c *CookieParameterConfig) RouteConfigFunc {
 	return WithParameter(&v310.Parameter{
-		Name:        http.CanonicalHeaderKey(c.Name),
-		In:          "header",
+		Name:        c.Name,
+		In:          "cookie",
 		Description: c.Description,
 		Required:    c.Required,
 		Schema:      c.Schema,

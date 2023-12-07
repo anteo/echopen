@@ -68,7 +68,7 @@ func TestReflect(t *testing.T) {
 		{"int64", int64(42), `{"type":"integer","format":"int64"}`, reflect.Int64},
 		{"float32", float32(42.0), `{"type":"number","format":"float"}`, reflect.Float32},
 		{"float64", float64(42.0), `{"type":"number","format":"double"}`, reflect.Float64},
-		{"bool", true, `{"type":"bool"}`, reflect.Bool},
+		{"bool", true, `{"type":"boolean"}`, reflect.Bool},
 		{"slice", []string{}, `{"type":"array","items":{"type":"string"}}`, reflect.Slice},
 		{"struct", TestStruct{}, `{"type":"object","required":["test"],"properties":{"test":{"type":"string"}}}`, reflect.Struct},
 		{"struct_ptr", &TestStruct{}, `{"type":"object","required":["test"],"properties":{"test":{"type":"string"}}}`, reflect.Struct},
