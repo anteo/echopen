@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"reflect"
 	"testing"
+	"time"
 
+	"github.com/gofrs/uuid"
 	v310 "github.com/richjyoung/echopen/openapi/v3.1.0"
 	"github.com/stretchr/testify/assert"
 )
@@ -74,6 +76,8 @@ func TestReflect(t *testing.T) {
 		{"struct_ptr", &TestStruct{}, `{"type":"object","required":["test"],"properties":{"test":{"type":"string"}}}`, reflect.Struct},
 		{"map", map[string]interface{}{}, `{"type":"object"}`, reflect.Map},
 		{"map_string", map[string]string{}, `{"type":"object","additionalProperties":{"type":"string"}}`, reflect.Map},
+		{"uuid", uuid.Must(uuid.NewV4()), `{"type":"string","format":"uuid"}`, reflect.Array},
+		{"time", time.Now(), `{"type":"string","format":"date-time"}`, reflect.Struct},
 	}
 
 	for _, tc := range defs {
