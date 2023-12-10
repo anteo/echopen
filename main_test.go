@@ -12,6 +12,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/richjyoung/echopen"
+	v310 "github.com/richjyoung/echopen/openapi/v3.1.0"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -252,4 +253,48 @@ func TestRequestBody(t *testing.T) {
 	api.Engine.ServeHTTP(res, req)
 
 	assert.Equal(t, 204, res.Result().StatusCode)
+}
+
+func TestBaseURL(t *testing.T) {
+	api := echopen.New(
+		"Test",
+		"1.0.0",
+		echopen.WithBaseURL("/api"),
+		echopen.WithSpecServer(&v310.Server{URL: "http://localhost:8080"}),
+	)
+
+	svr := api.Spec.Servers[0]
+	assert.Equal(t, "http://localhost:8080/api", svr.URL)
+
+	api.GET("/test", func(c echo.Context) error { return c.NoContent(http.StatusOK) })
+	api.Group("/group").GET("/test2", func(c echo.Context) error { return c.NoContent(http.StatusOK) })
+
+	routes := api.Engine.Routes()
+	for _, r := range routes {
+		assert.True(t, strings.HasPrefix(r.Path, "/api"))
+	}
+
+	for name := range api.Spec.Paths {
+		assert.False(t, strings.HasPrefix(name, "/api"))
+	}
+
+	req := httptest.NewRequest(http.MethodGet, "/api/test", nil)
+	w := httptest.NewRecorder()
+	api.Engine.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusOK, w.Code)
+
+	req = httptest.NewRequest(http.MethodGet, "/test", nil)
+	w = httptest.NewRecorder()
+	api.Engine.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusNotFound, w.Code)
+
+	req = httptest.NewRequest(http.MethodGet, "/api/group/test2", nil)
+	w = httptest.NewRecorder()
+	api.Engine.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusOK, w.Code)
+
+	req = httptest.NewRequest(http.MethodGet, "/group/test2", nil)
+	w = httptest.NewRecorder()
+	api.Engine.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusNotFound, w.Code)
 }

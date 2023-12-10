@@ -62,6 +62,7 @@ func WithSpecContact(c *v310.Contact) WrapperConfigFunc {
 
 func WithSpecServer(s *v310.Server) WrapperConfigFunc {
 	return func(a *APIWrapper) *APIWrapper {
+		s.URL += a.Config.BaseURL
 		a.Spec.AddServer(s)
 		return a
 	}
@@ -78,6 +79,17 @@ func (a *APIWrapper) SetSpecExternalDocs(d *v310.ExternalDocs) {
 func WithSpecExternalDocs(d *v310.ExternalDocs) WrapperConfigFunc {
 	return func(a *APIWrapper) *APIWrapper {
 		a.SetSpecExternalDocs(d)
+		return a
+	}
+}
+
+func (a *APIWrapper) SetBaseURL(baseURL string) {
+	a.Config.BaseURL = baseURL
+}
+
+func WithBaseURL(baseURL string) WrapperConfigFunc {
+	return func(a *APIWrapper) *APIWrapper {
+		a.Config.BaseURL = baseURL
 		return a
 	}
 }

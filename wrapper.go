@@ -16,6 +16,7 @@ import (
 )
 
 type Config struct {
+	BaseURL                  string
 	DisableDefaultMiddleware bool
 }
 
@@ -181,6 +182,9 @@ func (w *APIWrapper) Add(method string, path string, handler echo.HandlerFunc, c
 	// Convert echo format to OpenAPI path
 	oapiPath := echoRouteToOpenAPI(path)
 
+	// Get full path from configured Base URL
+	fullPath := w.Config.BaseURL + path
+
 	// Get the PathItem for this route
 	pathItemRef, ok := w.Spec.Paths[oapiPath]
 	if !ok {
@@ -236,7 +240,7 @@ func (w *APIWrapper) Add(method string, path string, handler echo.HandlerFunc, c
 	middlewares = append(middlewares, wrapper.Middlewares...)
 
 	// Add the route in to the echo engine
-	wrapper.Route = w.Engine.Add(method, path, wrapper.Handler, middlewares...)
+	wrapper.Route = w.Engine.Add(method, fullPath, wrapper.Handler, middlewares...)
 
 	// Give the echo route the same name
 	wrapper.Route.Name = wrapper.Operation.OperationID
@@ -256,7 +260,9 @@ func (w *APIWrapper) Group(prefix string, config ...GroupConfigFunc) *GroupWrapp
 		wrapper = configFunc(wrapper)
 	}
 
-	group := w.Engine.Group(prefix, wrapper.Middlewares...)
+	fullPath := w.Config.BaseURL + prefix
+
+	group := w.Engine.Group(fullPath, wrapper.Middlewares...)
 	wrapper.RouterGroup = group
 	return wrapper
 }
