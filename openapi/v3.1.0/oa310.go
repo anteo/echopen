@@ -30,7 +30,7 @@ type License struct {
 // 4.8.5 https://spec.openapis.org/oas/v3.1.0#server-object
 type Server struct {
 	URL         string                     `json:"url" yaml:"url"`
-	Description *string                    `json:"description,omitempty" yaml:"description,omitempty"`
+	Description string                     `json:"description,omitempty" yaml:"description,omitempty"`
 	Variables   map[string]*ServerVariable `json:"variables,omitempty" yaml:"variables,omitempty"`
 }
 
