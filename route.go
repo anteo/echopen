@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"reflect"
+	"strings"
 
 	v310 "github.com/anteo/echopen/openapi/v3.1.0"
 	"github.com/go-playground/validator/v10"
@@ -145,6 +146,10 @@ func (r *RouteWrapper) middleware() echo.MiddlewareFunc {
 				mime := ""
 				if len(cts) == 1 {
 					mime = cts[0]
+					parts := strings.SplitN(mime, ";", 2)
+					if len(parts) > 0 {
+						mime = parts[0]
+					}
 					if schema, ok := r.RequestBodySchema[mime]; ok {
 						if schema.SourceType != nil {
 							// Create a new struct of the given type
