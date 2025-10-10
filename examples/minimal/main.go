@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/richjyoung/echopen"
+	"github.com/anteo/echopen"
 )
 
 func main() {

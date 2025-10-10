@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"reflect"
 
-	v310 "github.com/richjyoung/echopen/openapi/v3.1.0"
+	v310 "github.com/anteo/echopen/openapi/v3.1.0"
 )
 
 type PathParameterConfig struct {

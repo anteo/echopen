@@ -9,10 +9,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/anteo/echopen"
+	v310 "github.com/anteo/echopen/openapi/v3.1.0"
 	"github.com/gofrs/uuid"
 	"github.com/labstack/echo/v4"
-	"github.com/richjyoung/echopen"
-	v310 "github.com/richjyoung/echopen/openapi/v3.1.0"
 	"github.com/stretchr/testify/assert"
 )
 

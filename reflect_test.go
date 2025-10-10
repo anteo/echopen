@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
+	v310 "github.com/anteo/echopen/openapi/v3.1.0"
 	"github.com/gofrs/uuid"
-	v310 "github.com/richjyoung/echopen/openapi/v3.1.0"
 	"github.com/stretchr/testify/assert"
 )
 

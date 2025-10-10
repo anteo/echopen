@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"reflect"
 
+	v310 "github.com/anteo/echopen/openapi/v3.1.0"
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
-	v310 "github.com/richjyoung/echopen/openapi/v3.1.0"
 )
 
 type RouteWrapper struct {

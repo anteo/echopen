@@ -32,8 +32,8 @@ github.com/mattn/go-isatty v0.0.20/go.mod h1:W+V8PltTTMOvKvAeJH7IuucS94S2C6jfK/D
 github.com/pkg/diff v0.0.0-20210226163009-20ebb0f2a09e/go.mod h1:pJLUxLENpZxwdsKMEsNbx1VGcRFpLqf3715MtcvvzbA=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
-github.com/richjyoung/echopen v0.0.0-20231210124401-5ce3ddab541c h1:Eoxj15dvIfhQ9dqHVn76/IlLD2weX52sKqav5CsYt9w=
-github.com/richjyoung/echopen v0.0.0-20231210124401-5ce3ddab541c/go.mod h1:MX3BJCXkZoEOlNvk8wtLGHAdtgAwskO9yCgeVIFlTXg=
+github.com/anteo/echopen v0.0.0-20231210124401-5ce3ddab541c h1:Eoxj15dvIfhQ9dqHVn76/IlLD2weX52sKqav5CsYt9w=
+github.com/anteo/echopen v0.0.0-20231210124401-5ce3ddab541c/go.mod h1:MX3BJCXkZoEOlNvk8wtLGHAdtgAwskO9yCgeVIFlTXg=
 github.com/rogpeppe/go-internal v1.9.0 h1:73kH8U+JUqXU8lRuOHeVHaa/SZPifC7BkcraZVejAe8=
 github.com/rogpeppe/go-internal v1.9.0/go.mod h1:WtVeX8xhTBvf0smdhujwtBcq4Qrzq/fJaraNFVN+nFs=
 github.com/stretchr/testify v1.11.1 h1:7s2iGBzp5EwR7/aIZr8ao5+dra3wiQyKjjFuvgVKu7U=

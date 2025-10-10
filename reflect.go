@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
+	v310 "github.com/anteo/echopen/openapi/v3.1.0"
 	"github.com/gofrs/uuid"
-	v310 "github.com/richjyoung/echopen/openapi/v3.1.0"
 )
 
 // ToSchemaRef takes a target value, extracts the type information, and returns a SchemaRef for that type

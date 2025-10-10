@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"reflect"
 
-	v310 "github.com/richjyoung/echopen/openapi/v3.1.0"
+	v310 "github.com/anteo/echopen/openapi/v3.1.0"
 )
 
 // WithRequestBodyStruct extracts type information from a provided struct to populate the OpenAPI requestBody.

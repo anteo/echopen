@@ -1,4 +1,4 @@
-[![TODOs](https://badgen.net/https/api.tickgit.com/badgen/github.com/richjyoung/echopen)](https://www.tickgit.com/browse?repo=github.com/richjyoung/echopen)
+[![TODOs](https://badgen.net/https/api.tickgit.com/badgen/github.com/anteo/echopen)](https://www.tickgit.com/browse?repo=github.com/anteo/echopen)
 
 # echOpen
 

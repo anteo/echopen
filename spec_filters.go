@@ -1,7 +1,7 @@
 package echopen
 
 import (
-	v310 "github.com/richjyoung/echopen/openapi/v3.1.0"
+	v310 "github.com/anteo/echopen/openapi/v3.1.0"
 )
 
 type SpecFilterFunc = func(s *v310.Specification) *v310.Specification
