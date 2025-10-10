@@ -158,6 +158,8 @@ func (w *APIWrapper) StructTypeToSchema(target reflect.Type, nameTag string) *v3
 
 	// Check if composition has been detected
 	if len(a.AllOf) > 0 {
+		// Mark composition as an object
+		a.Type = "object"
 		// Add the schema for direct field members to the allOf array and return
 		a.AllOf = append(a.AllOf, &v310.Ref[v310.Schema]{Value: s})
 		return a
@@ -166,6 +168,38 @@ func (w *APIWrapper) StructTypeToSchema(target reflect.Type, nameTag string) *v3
 }
 
 func (w *APIWrapper) StructFieldToSchemaRef(f reflect.StructField) *v310.Ref[v310.Schema] {
+	// Handle swagger/openapi override tags first to avoid registering component schemas prematurely.
+	if t := f.Tag.Get("swaggertype"); t != "" {
+		inline := &v310.Schema{Type: v310.SchemaType(t)}
+		if fmtTag := f.Tag.Get("format"); fmtTag != "" {
+			inline.Format = v310.SchemaFormat(fmtTag)
+		}
+		ref := &v310.Ref[v310.Schema]{Value: inline}
+
+		// Nullable support for inline schema: oneOf [inline, null]
+		if n := f.Tag.Get("nullable"); n == "true" {
+			ref.Value = &v310.Schema{OneOf: []*v310.Ref[v310.Schema]{
+				{Value: inline},
+				{Value: &v310.Schema{Type: v310.NullSchemaType}},
+			}}
+		}
+
+		// Apply metadata on the top-level container (works for both plain and oneOf container)
+		ref.Value.Description = f.Tag.Get("description")
+		if def := f.Tag.Get("default"); def != "" {
+			ref.Value.Default = def
+		}
+		if enum := f.Tag.Get("enum"); enum != "" {
+			ref.Value.Enum = strings.Split(enum, ",")
+		}
+		ExtractValidationRules(f, ref.Value)
+		if example := f.Tag.Get("example"); example != "" {
+			ref.Value.Examples = append(ref.Value.Examples, example)
+		}
+		return ref
+	}
+
+	// Fallback: build schema from type, then apply tags/nullable/metadata
 	ref := w.TypeToSchemaRef(f.Type)
 
 	if ref.Value != nil {
@@ -178,6 +212,29 @@ func (w *APIWrapper) StructFieldToSchemaRef(f reflect.StructField) *v310.Ref[v31
 		enum := f.Tag.Get("enum")
 		if enum != "" {
 			ref.Value.Enum = strings.Split(enum, ",")
+		}
+
+		// Nullable support: represent as oneOf [<original>, null]
+		if n := f.Tag.Get("nullable"); n == "true" {
+			// If field resolved to a $ref, wrap it into a oneOf with null
+			if ref.Value == nil && ref.Ref != "" {
+				ref = &v310.Ref[v310.Schema]{Value: &v310.Schema{
+					OneOf: []*v310.Ref[v310.Schema]{
+						{Ref: ref.Ref},
+						{Value: &v310.Schema{Type: v310.NullSchemaType}},
+					},
+				}}
+			} else if ref.Value != nil {
+				origType := ref.Value.Type
+				origFormat := ref.Value.Format
+				ref.Value.OneOf = []*v310.Ref[v310.Schema]{
+					{Value: &v310.Schema{Type: origType, Format: origFormat}},
+					{Value: &v310.Schema{Type: v310.NullSchemaType}},
+				}
+				// Clear base type/format to avoid conflicting with oneOf
+				ref.Value.Type = ""
+				ref.Value.Format = ""
+			}
 		}
 
 		// Extract validation rules

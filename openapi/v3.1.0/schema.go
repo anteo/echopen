@@ -18,6 +18,7 @@ type Schema struct {
 	WriteOnly   bool           `json:"write_only,omitempty" yaml:"write_only,omitempty"`
 	Examples    []interface{}  `json:"examples,omitempty" yaml:"examples,omitempty"`
 	AllOf       []*Ref[Schema] `json:"allOf,omitempty" yaml:"allOf,omitempty"`
+	OneOf       []*Ref[Schema] `json:"oneOf,omitempty" yaml:"oneOf,omitempty"`
 	XML         *XML           `json:"xml,omitempty" yaml:"xml,omitempty"`
 	SourceType  reflect.Type   `json:"-" yaml:"-"`
 
