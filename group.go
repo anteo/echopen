@@ -46,7 +46,7 @@ func (g *GroupWrapper) Add(method string, path string, handler echo.HandlerFunc,
 	fullPath := path
 	parentGroup := g
 	for parentGroup != nil {
-		fullPath = g.Prefix + fullPath
+		fullPath = parentGroup.Prefix + fullPath
 		parentGroup = parentGroup.GroupWrapper
 	}
 
