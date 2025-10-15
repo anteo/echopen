@@ -177,15 +177,15 @@ func (w *APIWrapper) StructFieldToSchemaRef(f reflect.StructField) *v310.Ref[v31
 		return &v310.Ref[v310.Schema]{Ref: refStr}
 	}
 	// Handle swagger/openapi override tags first to avoid registering component schemas prematurely.
-	if t := f.Tag.Get("swaggertype"); t != "" {
+	if t := getEchoTag(f, "type"); t != "" {
 		inline := &v310.Schema{Type: v310.SchemaType(t)}
-		if fmtTag := f.Tag.Get("format"); fmtTag != "" {
+		if fmtTag := getEchoTag(f, "format"); fmtTag != "" {
 			inline.Format = v310.SchemaFormat(fmtTag)
 		}
 		ref := &v310.Ref[v310.Schema]{Value: inline}
 
 		// Nullable support for inline schema: oneOf [inline, null]
-		if n := f.Tag.Get("nullable"); n == "true" {
+		if n := getEchoTag(f, "nullable"); n == "true" {
 			ref.Value = &v310.Schema{OneOf: []*v310.Ref[v310.Schema]{
 				{Value: inline},
 				{Value: &v310.Schema{Type: v310.NullSchemaType}},
@@ -193,15 +193,15 @@ func (w *APIWrapper) StructFieldToSchemaRef(f reflect.StructField) *v310.Ref[v31
 		}
 
 		// Apply metadata on the top-level container (works for both plain and oneOf container)
-		ref.Value.Description = f.Tag.Get("description")
-		if def := f.Tag.Get("default"); def != "" {
+		ref.Value.Description = getEchoTag(f, "description")
+		if def := getEchoTag(f, "default"); def != "" {
 			ref.Value.Default = def
 		}
-		if enum := f.Tag.Get("enum"); enum != "" {
+		if enum := getEchoTag(f, "enum"); enum != "" {
 			ref.Value.Enum = strings.Split(enum, ",")
 		}
 		ExtractValidationRules(f, ref.Value)
-		if example := f.Tag.Get("example"); example != "" {
+		if example := getEchoTag(f, "example"); example != "" {
 			ref.Value.Examples = append(ref.Value.Examples, example)
 		}
 		return ref
@@ -211,19 +211,19 @@ func (w *APIWrapper) StructFieldToSchemaRef(f reflect.StructField) *v310.Ref[v31
 	ref := w.TypeToSchemaRef(f.Type)
 
 	if ref.Value != nil {
-		ref.Value.Description = f.Tag.Get("description")
-		def := f.Tag.Get("default")
+		ref.Value.Description = getEchoTag(f, "description")
+		def := getEchoTag(f, "default")
 		if def != "" {
 			ref.Value.Default = def
 		}
 
-		enum := f.Tag.Get("enum")
+		enum := getEchoTag(f, "enum")
 		if enum != "" {
 			ref.Value.Enum = strings.Split(enum, ",")
 		}
 
 		// Nullable support: represent as oneOf [<original>, null]
-		if n := f.Tag.Get("nullable"); n == "true" {
+		if n := getEchoTag(f, "nullable"); n == "true" {
 			// If field resolved to a $ref, wrap it into a oneOf with null
 			if ref.Value == nil && ref.Ref != "" {
 				ref = &v310.Ref[v310.Schema]{Value: &v310.Schema{
@@ -249,7 +249,7 @@ func (w *APIWrapper) StructFieldToSchemaRef(f reflect.StructField) *v310.Ref[v31
 		ExtractValidationRules(f, ref.Value)
 
 		// Examples
-		example := f.Tag.Get("example")
+		example := getEchoTag(f, "example")
 		if example != "" {
 			ref.Value.Examples = append(ref.Value.Examples, example)
 		}
