@@ -173,6 +173,9 @@ func (w *APIWrapper) StructTypeToSchema(target reflect.Type, nameTag string) *v3
 }
 
 func (w *APIWrapper) StructFieldToSchemaRef(f reflect.StructField) *v310.Ref[v310.Schema] {
+	if refStr := getEchoTag(f, "ref"); refStr != "" {
+		return &v310.Ref[v310.Schema]{Ref: refStr}
+	}
 	// Handle swagger/openapi override tags first to avoid registering component schemas prematurely.
 	if t := f.Tag.Get("swaggertype"); t != "" {
 		inline := &v310.Schema{Type: v310.SchemaType(t)}
@@ -253,6 +256,14 @@ func (w *APIWrapper) StructFieldToSchemaRef(f reflect.StructField) *v310.Ref[v31
 	}
 
 	return ref
+}
+
+func getEchoTag(f reflect.StructField, key string) string {
+	if val := f.Tag.Get("echo-" + key); val != "" {
+		return val
+	}
+	// fallback to key without echo- prefix
+	return f.Tag.Get(key)
 }
 
 func ExtractJSONTags(field reflect.StructField) (string, bool) {
