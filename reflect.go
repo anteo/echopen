@@ -29,30 +29,27 @@ func (w *APIWrapper) TypeToSchemaRef(typ reflect.Type) *v310.Ref[v310.Schema] {
 		// Return a SchemaRef for the pointed value instead
 		return w.TypeToSchemaRef(typ.Elem())
 	} else if typ.Kind() == reflect.Struct {
-		schema := w.TypeToSchema(typ)
-
-		if schema.Type == "object" {
-			// Check if the struct has been seen before
-			if ref, exists := w.schemaMap[typ]; !exists {
-				// Check for anonymous structs
-				name := typ.Name()
-				if name != "" {
-					// Named structs can be stored in the Schema library and referenced multiple times
-					w.Spec.GetComponents().AddSchema(name, w.TypeToSchema(typ))
-					w.schemaMap[typ] = fmt.Sprintf("#/components/schemas/%s", name)
-
-					// Return a reference to the schema component
-					return &v310.Ref[v310.Schema]{
-						Ref: fmt.Sprintf("#/components/schemas/%s", name),
-					}
-				}
-			} else {
+		name := typ.Name()
+		if name != "" { // named struct → component
+			if ref, ok := w.schemaMap[typ]; ok {
 				return &v310.Ref[v310.Schema]{Ref: ref}
 			}
+			// Pre-register to break cycles
+			refStr := fmt.Sprintf("#/components/schemas/%s", name)
+			w.schemaMap[typ] = refStr
+			// Add a placeholder so refs are valid during recursion
+			w.Spec.GetComponents().AddSchema(name, &v310.Schema{Type: "object"})
+
+			// Now build the real schema
+			schema := w.TypeToSchema(typ)
+			// Overwrite the placeholder with the actual schema
+			w.Spec.GetComponents().AddSchema(name, schema)
+
+			return &v310.Ref[v310.Schema]{Ref: refStr}
 		}
 
 		// Anonymous struct or not an object type, return actual schema instead
-		return &v310.Ref[v310.Schema]{Value: schema}
+		return &v310.Ref[v310.Schema]{Value: w.TypeToSchema(typ)}
 	} else {
 		// Not a pointer or a struct,
 		return &v310.Ref[v310.Schema]{Value: w.TypeToSchema(typ)}
