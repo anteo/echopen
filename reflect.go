@@ -131,13 +131,21 @@ func (w *APIWrapper) StructTypeToSchema(target reflect.Type, nameTag string) *v3
 	for i := 0; i < target.NumField(); i++ {
 		f := target.Field(i)
 
+		// Skip unexported fields
+		if f.PkgPath != "" { // unexported
+			continue
+		}
+
 		name := strings.Split(f.Tag.Get(nameTag), ",")[0]
 
 		// Get SchemaRef for the contained field
 		ref := w.StructFieldToSchemaRef(f)
 
 		// Get the name from the json tag (does assume only JSON is used)
-		_, omitEmpty := ExtractJSONTags(f)
+		jsonName, omitEmpty := ExtractJSONTags(f)
+		if jsonName == "-" { // honor json:"-"
+			continue
+		}
 
 		if f.Anonymous {
 			// Anonymous members of a struct imply composition
