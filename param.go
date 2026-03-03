@@ -4,24 +4,24 @@ import (
 	"net/http"
 	"reflect"
 
-	v310 "github.com/anteo/echopen/openapi/v3.1.0"
+	v320 "github.com/anteo/echopen/openapi/v3.2.0"
 )
 
 type PathParameterConfig struct {
 	Name        string
 	Description string
-	Examples    []*v310.Example
-	Schema      *v310.Schema
+	Examples    []*v320.Example
+	Schema      *v320.Schema
 }
 
 type HeaderParameterConfig struct {
 	Name          string
 	Description   string
 	Required      bool
-	Examples      []*v310.Example
+	Examples      []*v320.Example
 	Style         string
 	Explode       bool
-	Schema        *v310.Schema
+	Schema        *v320.Schema
 	AllowMultiple bool
 }
 
@@ -29,10 +29,10 @@ type CookieParameterConfig struct {
 	Name        string
 	Description string
 	Required    bool
-	Schema      *v310.Schema
+	Schema      *v320.Schema
 }
 
-func WithParameter(param *v310.Parameter) RouteConfigFunc {
+func WithParameter(param *v320.Parameter) RouteConfigFunc {
 	return func(rw *RouteWrapper) *RouteWrapper {
 		rw.Operation.AddParameter(param)
 		return rw
@@ -40,7 +40,7 @@ func WithParameter(param *v310.Parameter) RouteConfigFunc {
 }
 
 func WithPathParameterConfig(c *PathParameterConfig) RouteConfigFunc {
-	return WithParameter(&v310.Parameter{
+	return WithParameter(&v320.Parameter{
 		Name:        c.Name,
 		In:          "path",
 		Description: c.Description,
@@ -51,7 +51,7 @@ func WithPathParameterConfig(c *PathParameterConfig) RouteConfigFunc {
 }
 
 func WithHeaderParameterConfig(c *HeaderParameterConfig) RouteConfigFunc {
-	return WithParameter(&v310.Parameter{
+	return WithParameter(&v320.Parameter{
 		Name:        http.CanonicalHeaderKey(c.Name),
 		In:          "header",
 		Description: c.Description,
@@ -64,7 +64,7 @@ func WithHeaderParameterConfig(c *HeaderParameterConfig) RouteConfigFunc {
 }
 
 func WithCookieParameterConfig(c *CookieParameterConfig) RouteConfigFunc {
-	return WithParameter(&v310.Parameter{
+	return WithParameter(&v320.Parameter{
 		Name:        c.Name,
 		In:          "cookie",
 		Description: c.Description,
@@ -85,7 +85,7 @@ func WithPathParameter(name string, description string, example interface{}) Rou
 			zero := reflect.New(t).Elem().Interface()
 			pathParam.Schema = rw.API.TypeToSchema(t)
 			if example != zero {
-				pathParam.Examples = []*v310.Example{
+				pathParam.Examples = []*v320.Example{
 					{Value: example},
 				}
 			}
@@ -107,7 +107,7 @@ func WithHeaderParameter(name string, description string, example interface{}) R
 			zero := reflect.New(t).Elem().Interface()
 			hdrParam.Schema = rw.API.TypeToSchema(t)
 			if example != zero {
-				hdrParam.Examples = []*v310.Example{
+				hdrParam.Examples = []*v320.Example{
 					{Value: example},
 				}
 			}

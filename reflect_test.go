@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	v310 "github.com/anteo/echopen/openapi/v3.1.0"
+	v320 "github.com/anteo/echopen/openapi/v3.2.0"
 	"github.com/gofrs/uuid"
 	"github.com/stretchr/testify/assert"
 )
@@ -84,7 +84,7 @@ func TestReflect(t *testing.T) {
 		t.Run(tc.Name, func(t *testing.T) {
 			w := New("Test API", "1.0.0")
 			ref := w.ToSchemaRef(tc.Target)
-			schema := ref.DeRef(w.Spec.Components).(*v310.Schema)
+			schema := ref.DeRef(w.Spec.Components).(*v320.Schema)
 			buf, _ := json.Marshal(schema)
 			assert.Equal(t, tc.Expected, string(buf))
 			if ref.Value != nil {

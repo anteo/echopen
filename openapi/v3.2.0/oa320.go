@@ -1,8 +1,8 @@
-package v310
+package v320
 
 type TODO interface{}
 
-// 4.8.2 https://spec.openapis.org/oas/v3.1.0#info-object
+// 4.8.2 https://spec.openapis.org/oas/v3.2.0#info-object
 type Info struct {
 	Title          string   `json:"title" yaml:"title"`
 	Version        string   `json:"version" yaml:"version"`
@@ -13,38 +13,38 @@ type Info struct {
 	License        *License `json:"license,omitempty" yaml:"license,omitempty"`
 }
 
-// 4.8.3 https://spec.openapis.org/oas/v3.1.0#contact-object
+// 4.8.3 https://spec.openapis.org/oas/v3.2.0#contact-object
 type Contact struct {
 	Name  string `json:"name,omitempty" yaml:"name,omitempty"`
 	URL   string `json:"url,omitempty" yaml:"url,omitempty"`
 	Email string `json:"email,omitempty" yaml:"email,omitempty"`
 }
 
-// 4.8.4 https://spec.openapis.org/oas/v3.1.0#license-object
+// 4.8.4 https://spec.openapis.org/oas/v3.2.0#license-object
 type License struct {
 	Name       string `json:"name" yaml:"name"`
 	Identifier string `json:"identifier,omitempty" yaml:"identifier,omitempty"`
 	URL        string `json:"url,omitempty" yaml:"url,omitempty"`
 }
 
-// 4.8.5 https://spec.openapis.org/oas/v3.1.0#server-object
+// 4.8.5 https://spec.openapis.org/oas/v3.2.0#server-object
 type Server struct {
 	URL         string                     `json:"url" yaml:"url"`
 	Description string                     `json:"description,omitempty" yaml:"description,omitempty"`
 	Variables   map[string]*ServerVariable `json:"variables,omitempty" yaml:"variables,omitempty"`
 }
 
-// 4.8.6 https://spec.openapis.org/oas/v3.1.0#server-variable-object
+// 4.8.6 https://spec.openapis.org/oas/v3.2.0#server-variable-object
 type ServerVariable struct {
 	Enum        []string `json:"enum" yaml:"enum"`
 	Default     string   `json:"default" yaml:"default"`
 	Description string   `json:"description,omitempty" yaml:"description,omitempty"`
 }
 
-// 4.8.8 https://spec.openapis.org/oas/v3.1.0#paths-object
+// 4.8.8 https://spec.openapis.org/oas/v3.2.0#paths-object
 type Paths map[string]*Ref[PathItem]
 
-// 4.8.9 https://spec.openapis.org/oas/v3.1.0#path-item-object
+// 4.8.9 https://spec.openapis.org/oas/v3.2.0#path-item-object
 type PathItem struct {
 	Summary     string          `json:"summary,omitempty" yaml:"summary,omitempty"`
 	Description string          `json:"description,omitempty" yaml:"description,omitempty"`
@@ -60,13 +60,13 @@ type PathItem struct {
 	Parameters  *Ref[Parameter] `json:"parameters,omitempty" yaml:"parameters,omitempty"`
 }
 
-// 4.8.11 https://spec.openapis.org/oas/v3.1.0#external-documentation-object
+// 4.8.11 https://spec.openapis.org/oas/v3.2.0#external-documentation-object
 type ExternalDocs struct {
 	Description string `json:"description,omitempty" yaml:"description,omitempty"`
 	URL         string `json:"url" yaml:"url"`
 }
 
-// 4.8.12 https://spec.openapis.org/oas/v3.1.0#parameter-object
+// 4.8.12 https://spec.openapis.org/oas/v3.2.0#parameter-object
 type Parameter struct {
 	Name            string            `json:"name,omitempty" yaml:"name,omitempty"`
 	In              ParameterLocation `json:"in,omitempty" yaml:"in,omitempty"`
@@ -93,14 +93,14 @@ const (
 	CookieParameter ParameterLocation = "cookie"
 )
 
-// 4.8.13 https://spec.openapis.org/oas/v3.1.0#request-body-object
+// 4.8.13 https://spec.openapis.org/oas/v3.2.0#request-body-object
 type RequestBody struct {
 	Description string                      `json:"description,omitempty" yaml:"description,omitempty"`
 	Content     map[string]*MediaTypeObject `json:"content" yaml:"content"`
 	Required    bool                        `json:"required,omitempty" yaml:"required,omitempty"`
 }
 
-// 4.8.14 https://spec.openapis.org/oas/v3.1.0#media-type-object
+// 4.8.14 https://spec.openapis.org/oas/v3.2.0#media-type-object
 type MediaTypeObject struct {
 	Schema   *Ref[Schema]             `json:"schema,omitempty" yaml:"schema,omitempty"`
 	Example  interface{}              `json:"example,omitempty" yaml:"example,omitempty"`
@@ -108,7 +108,7 @@ type MediaTypeObject struct {
 	Encoding map[string]*Encoding     `json:"encoding,omitempty" yaml:"encoding,omitempty"`
 }
 
-// 4.8.15 https://spec.openapis.org/oas/v3.1.0#encoding-object
+// 4.8.15 https://spec.openapis.org/oas/v3.2.0#encoding-object
 type Encoding struct {
 	ContentType   string                  `json:"content_type,omitempty" yaml:"content_type,omitempty"`
 	Headers       map[string]*Ref[Header] `json:"headers,omitempty" yaml:"headers,omitempty"`
@@ -117,10 +117,10 @@ type Encoding struct {
 	AllowReserved bool                    `json:"allowReserved,omitempty" yaml:"allowReserved,omitempty"`
 }
 
-// 4.8.18 https://spec.openapis.org/oas/v3.1.0#callback-object
+// 4.8.18 https://spec.openapis.org/oas/v3.2.0#callback-object
 type Callback map[string]*Ref[PathItem]
 
-// 4.8.19 https://spec.openapis.org/oas/v3.1.0#example-object
+// 4.8.19 https://spec.openapis.org/oas/v3.2.0#example-object
 type Example struct {
 	Summary       string      `json:"summary,omitempty" yaml:"summary,omitempty"`
 	Description   string      `json:"description,omitempty" yaml:"description,omitempty"`
@@ -128,29 +128,29 @@ type Example struct {
 	ExternalValue string      `json:"externalValue,omitempty" yaml:"externalValue,omitempty"`
 }
 
-// 4.8.20 https://spec.openapis.org/oas/v3.1.0#link-object
+// 4.8.20 https://spec.openapis.org/oas/v3.2.0#link-object
 type Link struct {
 	TODO
 }
 
-// 4.8.21 https://spec.openapis.org/oas/v3.1.0#header-object
+// 4.8.21 https://spec.openapis.org/oas/v3.2.0#header-object
 type Header struct {
 	TODO
 }
 
-// 4.8.22 https://spec.openapis.org/oas/v3.1.0#tag-object
+// 4.8.22 https://spec.openapis.org/oas/v3.2.0#tag-object
 type Tag struct {
 	Name         string        `json:"name" yaml:"name"`
 	Description  string        `json:"description,omitempty" yaml:"description,omitempty"`
 	ExternalDocs *ExternalDocs `json:"externalDocs,omitempty" yaml:"externalDocs,omitempty"`
 }
 
-// 4.8.25 https://spec.openapis.org/oas/v3.1.0#discriminator-object
+// 4.8.25 https://spec.openapis.org/oas/v3.2.0#discriminator-object
 type Discriminator struct {
 	TODO
 }
 
-// 4.8.26 https://spec.openapis.org/oas/v3.1.0#xml-object
+// 4.8.26 https://spec.openapis.org/oas/v3.2.0#xml-object
 type XML struct {
 	Name      string `json:"name,omitempty" yaml:"name,omitempty"`
 	Namespace string `json:"namespace,omitempty" yaml:"namespace,omitempty"`
@@ -159,7 +159,7 @@ type XML struct {
 	Wrapped   bool   `json:"wrapped,omitempty" yaml:"wrapped,omitempty"`
 }
 
-// 4.8.27 https://spec.openapis.org/oas/v3.1.0#security-scheme-object
+// 4.8.27 https://spec.openapis.org/oas/v3.2.0#security-scheme-object
 type SecurityScheme struct {
 	Type             SecuritySchemeType `json:"type,omitempty" yaml:"type,omitempty"`
 	In               string             `json:"in,omitempty" yaml:"in,omitempty"`
@@ -181,7 +181,7 @@ const (
 	OpenIDConnectSecuritySchemeType SecuritySchemeType = "openIdConnect"
 )
 
-// 4.8.28 https://spec.openapis.org/oas/v3.1.0#oauth-flows-object
+// 4.8.28 https://spec.openapis.org/oas/v3.2.0#oauth-flows-object
 type OAuthFlows struct {
 	Implicit          *OAuthFlow `json:"implicit,omitempty" yaml:"implicit,omitempty"`
 	Password          *OAuthFlow `json:"password,omitempty" yaml:"password,omitempty"`
@@ -189,7 +189,7 @@ type OAuthFlows struct {
 	AuthorizationCode *OAuthFlow `json:"authorizationCode,omitempty" yaml:"authorizationCode,omitempty"`
 }
 
-// 4.8.29 https://spec.openapis.org/oas/v3.1.0#oauth-flow-object
+// 4.8.29 https://spec.openapis.org/oas/v3.2.0#oauth-flow-object
 type OAuthFlow struct {
 	AuthorizationURL string            `json:"authorizationUrl,omitempty" yaml:"authorizationUrl,omitempty"`
 	TokenURL         string            `json:"tokenUrl,omitempty" yaml:"tokenUrl,omitempty"`
@@ -197,5 +197,5 @@ type OAuthFlow struct {
 	Scopes           map[string]string `json:"scopes,omitempty" yaml:"scopes,omitempty"`
 }
 
-// 4.8.30 https://spec.openapis.org/oas/v3.1.0#security-requirement-object
+// 4.8.30 https://spec.openapis.org/oas/v3.2.0#security-requirement-object
 type SecurityRequirement map[string][]string

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	v310 "github.com/anteo/echopen/openapi/v3.1.0"
+	v320 "github.com/anteo/echopen/openapi/v3.2.0"
 	"github.com/labstack/echo/v4"
 )
 
@@ -14,7 +14,7 @@ type GroupWrapper struct {
 	Prefix               string
 	Middlewares          []echo.MiddlewareFunc
 	Tags                 []string
-	SecurityRequirements []*v310.SecurityRequirement
+	SecurityRequirements []*v320.SecurityRequirement
 	RouterGroup          *echo.Group
 }
 
@@ -40,7 +40,7 @@ func (g *GroupWrapper) Group(prefix string, config ...GroupConfigFunc) *GroupWra
 // Add a route to the group
 func (g *GroupWrapper) Add(method string, path string, handler echo.HandlerFunc, config ...RouteConfigFunc) *RouteWrapper {
 	// Construct a new operation for this path and method
-	op := &v310.Operation{}
+	op := &v320.Operation{}
 
 	// Get full path from group
 	fullPath := path
@@ -56,7 +56,7 @@ func (g *GroupWrapper) Add(method string, path string, handler echo.HandlerFunc,
 	// Get the PathItem for this route
 	pathItemRef, ok := g.API.Spec.Paths[oapiPath]
 	if !ok {
-		pathItemRef = &v310.Ref[v310.PathItem]{Value: &v310.PathItem{}}
+		pathItemRef = &v320.Ref[v320.PathItem]{Value: &v320.PathItem{}}
 		g.API.Spec.Paths[oapiPath] = pathItemRef
 	}
 	pathItem := pathItemRef.Value
@@ -90,7 +90,7 @@ func (g *GroupWrapper) Add(method string, path string, handler echo.HandlerFunc,
 		Operation:         op,
 		PathItem:          pathItem,
 		Handler:           handler,
-		RequestBodySchema: map[string]*v310.Schema{},
+		RequestBodySchema: map[string]*v320.Schema{},
 	}
 
 	// Add group tags

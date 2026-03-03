@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/anteo/echopen"
-	v310 "github.com/anteo/echopen/openapi/v3.1.0"
+	v320 "github.com/anteo/echopen/openapi/v3.2.0"
 	"github.com/labstack/echo/v4"
 )
 
@@ -15,9 +15,9 @@ func main() {
 		"Tags Example",
 		"1.0.0",
 		echopen.WithSpecDescription("Example to show operation tags and specification filtering."),
-		echopen.WithSpecLicense(&v310.License{Name: "MIT", URL: "https://example.com/license"}),
-		echopen.WithSpecTag(&v310.Tag{Name: "hello_world", Description: "Hello World routes"}),
-		echopen.WithSpecTag(&v310.Tag{Name: "hidden", Description: "Hidden routes"}),
+		echopen.WithSpecLicense(&v320.License{Name: "MIT", URL: "https://example.com/license"}),
+		echopen.WithSpecTag(&v320.Tag{Name: "hello_world", Description: "Hello World routes"}),
+		echopen.WithSpecTag(&v320.Tag{Name: "hidden", Description: "Hidden routes"}),
 	)
 
 	// Hello World route

@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/anteo/echopen"
-	v310 "github.com/anteo/echopen/openapi/v3.1.0"
+	v320 "github.com/anteo/echopen/openapi/v3.2.0"
 	"github.com/labstack/echo/v4"
 )
 
@@ -15,14 +15,14 @@ func main() {
 		"Swagger Petstore",
 		"1.0.0",
 		echopen.WithSpecDescription("A sample API that uses a petstore as an example to demonstrate features in the OpenAPI 3.0 specification"),
-		echopen.WithSpecLicense(&v310.License{Name: "Apache 2.0", URL: "https://www.apache.org/licenses/LICENSE"}),
+		echopen.WithSpecLicense(&v320.License{Name: "Apache 2.0", URL: "https://www.apache.org/licenses/LICENSE"}),
 		echopen.WithSpecTermsOfService("http://swagger.io/terms/"),
-		echopen.WithSpecContact(&v310.Contact{
+		echopen.WithSpecContact(&v320.Contact{
 			Name:  "Swagger API Team",
 			Email: "apiteam@swagger.io",
 			URL:   "http://swagger.io",
 		}),
-		echopen.WithSpecServer(&v310.Server{URL: "https://petstore.swagger.io/v2"}),
+		echopen.WithSpecServer(&v320.Server{URL: "https://petstore.swagger.io/v2"}),
 	)
 
 	api.GET(
@@ -58,8 +58,8 @@ Sed tempus felis lobortis leo pulvinar rutrum. Nam mattis velit nisl, eu condime
 		// echopen.WithPathParameter(&echopen.PathParameterConfig{
 		// 	Name:        "id",
 		// 	Description: "ID of pet to fetch",
-		// 	Schema: &v310.Schema{
-		// 		Type:   v310.IntegerSchemaType,
+		// 	Schema: &v320.Schema{
+		// 		Type:   v320.IntegerSchemaType,
 		// 		Format: "int64",
 		// 	},
 		// }),
@@ -75,8 +75,8 @@ Sed tempus felis lobortis leo pulvinar rutrum. Nam mattis velit nisl, eu condime
 		// echopen.WithPathParameter(&echopen.PathParameterConfig{
 		// 	Name:        "id",
 		// 	Description: "ID of pet to delete",
-		// 	Schema: &v310.Schema{
-		// 		Type:   v310.IntegerSchemaType,
+		// 	Schema: &v320.Schema{
+		// 		Type:   v320.IntegerSchemaType,
 		// 		Format: "int64",
 		// 	},
 		// }),

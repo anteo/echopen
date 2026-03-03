@@ -1,14 +1,14 @@
 package echopen
 
 import (
-	v310 "github.com/anteo/echopen/openapi/v3.1.0"
+	v320 "github.com/anteo/echopen/openapi/v3.2.0"
 )
 
-type SpecFilterFunc = func(s *v310.Specification) *v310.Specification
+type SpecFilterFunc = func(s *v320.Specification) *v320.Specification
 
 func IncludeTags(tags ...string) SpecFilterFunc {
-	return func(s *v310.Specification) *v310.Specification {
-		newTags := []*v310.Tag{}
+	return func(s *v320.Specification) *v320.Specification {
+		newTags := []*v320.Tag{}
 		for _, tag := range s.Tags {
 			for _, included := range tags {
 				if tag.Name == included {
@@ -96,8 +96,8 @@ func IncludeTags(tags ...string) SpecFilterFunc {
 }
 
 func ExcludeTags(tags ...string) SpecFilterFunc {
-	return func(s *v310.Specification) *v310.Specification {
-		newTags := []*v310.Tag{}
+	return func(s *v320.Specification) *v320.Specification {
+		newTags := []*v320.Tag{}
 		for _, tag := range s.Tags {
 			for _, excluded := range tags {
 				if tag.Name == excluded {

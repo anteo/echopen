@@ -1,4 +1,4 @@
-package v310
+package v320
 
 import (
 	"reflect"
@@ -8,7 +8,7 @@ import (
 	"github.com/gofrs/uuid"
 )
 
-// 4.8.24 https://spec.openapis.org/oas/v3.1.0#schema-object
+// 4.8.24 https://spec.openapis.org/oas/v3.2.0#schema-object
 type Schema struct {
 	Title       string         `json:"title,omitempty" yaml:"title,omitempty"`
 	Description string         `json:"description,omitempty" yaml:"description,omitempty"`

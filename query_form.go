@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"reflect"
 
-	v310 "github.com/anteo/echopen/openapi/v3.1.0"
+	v320 "github.com/anteo/echopen/openapi/v3.2.0"
 )
 
 // WithQueryStruct extracts type information from a provided struct to populate the OpenAPI operation parameters.
@@ -20,13 +20,13 @@ func WithQueryStruct(target interface{}) RouteConfigFunc {
 		rw.QuerySchema = s
 
 		for name, prop := range s.Properties {
-			rw.Operation.AddParameter(&v310.Parameter{
+			rw.Operation.AddParameter(&v320.Parameter{
 				Name:        name,
 				In:          "query",
 				Required:    false,
 				Description: prop.Value.Description,
 				Style:       "form",
-				Schema: &v310.Schema{
+				Schema: &v320.Schema{
 					Type:    prop.Value.Type,
 					Items:   prop.Value.Items,
 					Enum:    prop.Value.Enum,

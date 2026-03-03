@@ -1,7 +1,7 @@
 package echopen
 
 import (
-	v310 "github.com/anteo/echopen/openapi/v3.1.0"
+	v320 "github.com/anteo/echopen/openapi/v3.2.0"
 	"github.com/labstack/echo/v4"
 )
 
@@ -21,7 +21,7 @@ func WithGroupTags(tags ...string) GroupConfigFunc {
 	}
 }
 
-func WithGroupSecurityRequirement(req *v310.SecurityRequirement) GroupConfigFunc {
+func WithGroupSecurityRequirement(req *v320.SecurityRequirement) GroupConfigFunc {
 	return func(gw *GroupWrapper) *GroupWrapper {
 		gw.SecurityRequirements = append(gw.SecurityRequirements, req)
 		return gw

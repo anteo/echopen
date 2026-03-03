@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	v310 "github.com/anteo/echopen/openapi/v3.1.0"
+	v320 "github.com/anteo/echopen/openapi/v3.2.0"
 	"github.com/labstack/echo/v4"
 )
 
@@ -60,7 +60,7 @@ func WithDeprecated() RouteConfigFunc {
 
 func WithOptionalSecurity() RouteConfigFunc {
 	return func(rw *RouteWrapper) *RouteWrapper {
-		rw.Operation.AddSecurityRequirement(&v310.SecurityRequirement{})
+		rw.Operation.AddSecurityRequirement(&v320.SecurityRequirement{})
 		return rw
 	}
 }
@@ -76,7 +76,7 @@ func WithSecurityRequirement(name string, scopes []string) RouteConfigFunc {
 		}
 
 		// Add the requirement to the operation definition
-		rw.Operation.AddSecurityRequirement(&v310.SecurityRequirement{
+		rw.Operation.AddSecurityRequirement(&v320.SecurityRequirement{
 			name: scopes,
 		})
 

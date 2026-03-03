@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/anteo/echopen"
-	v310 "github.com/anteo/echopen/openapi/v3.1.0"
+	v320 "github.com/anteo/echopen/openapi/v3.2.0"
 	"github.com/gofrs/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
@@ -260,7 +260,7 @@ func TestBaseURL(t *testing.T) {
 		"Test",
 		"1.0.0",
 		echopen.WithBaseURL("/api"),
-		echopen.WithSpecServer(&v310.Server{URL: "http://localhost:8080"}),
+		echopen.WithSpecServer(&v320.Server{URL: "http://localhost:8080"}),
 	)
 
 	svr := api.Spec.Servers[0]

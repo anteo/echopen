@@ -1,11 +1,10 @@
-package v310
+package v320
 
 import (
-	"bytes"
-	"encoding/gob"
+	"encoding/json"
 )
 
-// https://spec.openapis.org/oas/v3.1.0#openapi-object
+// https://spec.openapis.org/oas/v3.2.0#openapi-object
 type Specification struct {
 	OpenAPI           string                    `json:"openapi" yaml:"openapi"`
 	JSONSchemaDialect string                    `json:"jsonSchemaDialect,omitempty" yaml:"jsonSchemaDialect,omitempty"`
@@ -21,8 +20,8 @@ type Specification struct {
 
 func NewSpecification() *Specification {
 	return &Specification{
-		OpenAPI:           "3.1.0",
-		JSONSchemaDialect: "https://spec.openapis.org/oas/3.1/dialect/base",
+		OpenAPI:           "3.2.0",
+		JSONSchemaDialect: "https://spec.openapis.org/oas/3.2/dialect/2025-09-17",
 		Servers:           []*Server{},
 		Paths:             Paths{},
 		Webhooks:          map[string]*Ref[PathItem]{},
@@ -33,11 +32,11 @@ func NewSpecification() *Specification {
 
 func (d *Specification) Copy() *Specification {
 	dest := &Specification{}
-	buf := bytes.Buffer{}
-	if err := gob.NewEncoder(&buf).Encode(d); err != nil {
+	data, err := json.Marshal(d)
+	if err != nil {
 		return nil
 	}
-	if err := gob.NewDecoder(&buf).Decode(dest); err != nil {
+	if err := json.Unmarshal(data, dest); err != nil {
 		return nil
 	}
 	return dest

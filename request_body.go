@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"reflect"
 
-	v310 "github.com/anteo/echopen/openapi/v3.1.0"
+	v320 "github.com/anteo/echopen/openapi/v3.2.0"
 )
 
 // WithRequestBodyStruct extracts type information from a provided struct to populate the OpenAPI requestBody.
@@ -17,7 +17,7 @@ func WithRequestBodyStruct(mime string, description string, target interface{}) 
 
 	return func(rw *RouteWrapper) *RouteWrapper {
 		s := rw.API.ToSchemaRef(target)
-		rw.RequestBodySchema[mime] = s.DeRef(rw.API.Spec.Components).(*v310.Schema)
+		rw.RequestBodySchema[mime] = s.DeRef(rw.API.Spec.Components).(*v320.Schema)
 
 		// rw.Middlewares = append(rw.Middlewares, func(next echo.HandlerFunc) echo.HandlerFunc {
 		// 	val := validator.New(validator.WithRequiredStructEnabled())
@@ -43,9 +43,9 @@ func WithRequestBodyStruct(mime string, description string, target interface{}) 
 		// 	}
 		// })
 
-		rw.Operation.AddRequestBody(&v310.RequestBody{
+		rw.Operation.AddRequestBody(&v320.RequestBody{
 			Description: description,
-			Content: map[string]*v310.MediaTypeObject{
+			Content: map[string]*v320.MediaTypeObject{
 				mime: {Schema: s},
 			},
 		})
@@ -54,23 +54,23 @@ func WithRequestBodyStruct(mime string, description string, target interface{}) 
 	}
 }
 
-func WithRequestBody(rb *v310.RequestBody) RouteConfigFunc {
+func WithRequestBody(rb *v320.RequestBody) RouteConfigFunc {
 	return func(rw *RouteWrapper) *RouteWrapper {
 		for mime, content := range rb.Content {
-			rw.RequestBodySchema[mime] = content.Schema.DeRef(rw.API.Spec.Components).(*v310.Schema)
+			rw.RequestBodySchema[mime] = content.Schema.DeRef(rw.API.Spec.Components).(*v320.Schema)
 		}
 		rw.Operation.AddRequestBody(rb)
 		return rw
 	}
 }
 
-func WithRequestBodySchema(mime string, s *v310.Schema) RouteConfigFunc {
+func WithRequestBodySchema(mime string, s *v320.Schema) RouteConfigFunc {
 	return func(rw *RouteWrapper) *RouteWrapper {
 		rw.RequestBodySchema[mime] = s
-		rw.Operation.AddRequestBody(&v310.RequestBody{
-			Content: map[string]*v310.MediaTypeObject{
+		rw.Operation.AddRequestBody(&v320.RequestBody{
+			Content: map[string]*v320.MediaTypeObject{
 				mime: {
-					Schema: &v310.Ref[v310.Schema]{
+					Schema: &v320.Ref[v320.Schema]{
 						Value: s,
 					},
 				},
@@ -87,7 +87,7 @@ func WithRequestBodyRef(name string) RouteConfigFunc {
 			panic("echopen: request body not registered")
 		}
 		for mime, content := range req.Content {
-			rw.RequestBodySchema[mime] = content.Schema.DeRef(rw.API.Spec.Components).(*v310.Schema)
+			rw.RequestBodySchema[mime] = content.Schema.DeRef(rw.API.Spec.Components).(*v320.Schema)
 		}
 		rw.Operation.AddRequestBodyRef(fmt.Sprintf("#/components/requestBodies/%s", name))
 		return rw

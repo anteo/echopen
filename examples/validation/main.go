@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/anteo/echopen"
-	v310 "github.com/anteo/echopen/openapi/v3.1.0"
+	v320 "github.com/anteo/echopen/openapi/v3.2.0"
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 )
@@ -33,7 +33,7 @@ func main() {
 		"Validation",
 		"1.0.0",
 		echopen.WithSpecDescription(Description),
-		echopen.WithSpecLicense(&v310.License{Name: "MIT", URL: "https://example.com/license"}),
+		echopen.WithSpecLicense(&v320.License{Name: "MIT", URL: "https://example.com/license"}),
 	)
 
 	// Add a global error handler to catch validation errors

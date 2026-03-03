@@ -20,7 +20,7 @@ Helper functions are available for all of these to customise each created object
 Interactions with each wrapper will automatically trigger the corresponding changes to the OpenAPI specification, and this can be directly modified as well both before the server is started, or on the fly when serving the spec to clients through the API.
 
 Certain objects in OpenAPI specs can either be a value or a reference to a value elsewhere in the specification.
-See [openapi/v3.1.0/ref.go](./openapi/v3.1.0/ref.go) for the `Ref[T any]` struct type.
+See [openapi/v3.2.0/ref.go](./openapi/v3.2.0/ref.go) for the `Ref[T any]` struct type.
 This uses generics, requiring Go 1.18+.
 echOpen is tested against the last three major Go versions.
 
@@ -38,8 +38,8 @@ api := echopen.New(
   "Hello World",
   "1.0.0",
   echopen.WithSpecDescription("Very basic example with single route and plain text response."),
-  echopen.WithSpecLicense(&v310.License{Name: "MIT", URL: "https://opensource.org/license/mit/"}),
-  echopen.WithSpecTag(&v310.Tag{Name: "hello_world", Description: "Hello World API Routes"}),
+  echopen.WithSpecLicense(&v320.License{Name: "MIT", URL: "https://opensource.org/license/mit/"}),
+  echopen.WithSpecTag(&v320.Tag{Name: "hello_world", Description: "Hello World API Routes"}),
 )
 
 // Hello World route
@@ -63,7 +63,7 @@ api.Start("localhost:3000")
 This results in the following generated specification:
 
 ```yaml
-openapi: 3.1.0
+openapi: 3.2.0
 jsonSchemaDialect: https://spec.openapis.org/oas/3.1/dialect/base
 info:
   title: Hello World
@@ -92,7 +92,7 @@ paths:
           description: Unexpected error
 ```
 
-The call to `echopen.New()` creates a new wrapper around an echo engine and a v3.1.0 schema object.
+The call to `echopen.New()` creates a new wrapper around an echo engine and a v3.2.0 schema object.
 Whilst both of these can be interacted with directly, the libary contains a range of helper functions to simplify building APIs.
 
 # Examples

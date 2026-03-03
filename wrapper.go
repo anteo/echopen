@@ -9,7 +9,7 @@ import (
 	"reflect"
 	"strings"
 
-	v310 "github.com/anteo/echopen/openapi/v3.1.0"
+	v320 "github.com/anteo/echopen/openapi/v3.2.0"
 
 	"github.com/labstack/echo/v4"
 	"gopkg.in/yaml.v3"
@@ -21,7 +21,7 @@ type Config struct {
 }
 
 type APIWrapper struct {
-	Spec   *v310.Specification
+	Spec   *v320.Specification
 	Engine *echo.Echo
 	Config *Config
 
@@ -30,7 +30,7 @@ type APIWrapper struct {
 
 func New(title string, apiVersion string, config ...WrapperConfigFunc) *APIWrapper {
 	wrapper := &APIWrapper{
-		Spec:   v310.NewSpecification(),
+		Spec:   v320.NewSpecification(),
 		Engine: echo.New(),
 		Config: &Config{},
 
@@ -177,7 +177,7 @@ func (w *APIWrapper) Start(addr string) error {
 // Register a new route with the given method and path
 func (w *APIWrapper) Add(method string, path string, handler echo.HandlerFunc, config ...RouteConfigFunc) *RouteWrapper {
 	// Construct a new operation for this path and method
-	op := &v310.Operation{}
+	op := &v320.Operation{}
 
 	// Convert echo format to OpenAPI path
 	oapiPath := echoRouteToOpenAPI(path)
@@ -188,7 +188,7 @@ func (w *APIWrapper) Add(method string, path string, handler echo.HandlerFunc, c
 	// Get the PathItem for this route
 	pathItemRef, ok := w.Spec.Paths[oapiPath]
 	if !ok {
-		pathItemRef = &v310.Ref[v310.PathItem]{Value: &v310.PathItem{}}
+		pathItemRef = &v320.Ref[v320.PathItem]{Value: &v320.PathItem{}}
 		w.Spec.Paths[oapiPath] = pathItemRef
 	}
 	pathItem := pathItemRef.Value
@@ -221,7 +221,7 @@ func (w *APIWrapper) Add(method string, path string, handler echo.HandlerFunc, c
 		Operation:         op,
 		PathItem:          pathItem,
 		Handler:           handler,
-		RequestBodySchema: map[string]*v310.Schema{},
+		RequestBodySchema: map[string]*v320.Schema{},
 	}
 
 	// Set default operation ID

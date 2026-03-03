@@ -1,6 +1,6 @@
-package v310
+package v320
 
-// 4.8.10 https://spec.openapis.org/oas/v3.1.0#operation-object
+// 4.8.10 https://spec.openapis.org/oas/v3.2.0#operation-object
 type Operation struct {
 	OperationID  string                    `json:"operationId,omitempty" yaml:"operationId,omitempty"`
 	Description  string                    `json:"description,omitempty" yaml:"description,omitempty"`

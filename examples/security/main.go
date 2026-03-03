@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/anteo/echopen"
-	v310 "github.com/anteo/echopen/openapi/v3.1.0"
+	v320 "github.com/anteo/echopen/openapi/v3.2.0"
 	"github.com/labstack/echo/v4"
 )
 
@@ -19,13 +19,13 @@ func main() {
 		"Hello World",
 		"1.0.0",
 		echopen.WithSpecDescription("Demonstration of routes with security requirements"),
-		echopen.WithSpecLicense(&v310.License{Name: "MIT", URL: "https://example.com/license"}),
+		echopen.WithSpecLicense(&v320.License{Name: "MIT", URL: "https://example.com/license"}),
 	)
 
 	api.Spec.GetComponents().AddJSONResponse("ErrorResponse", "Error response", api.ToSchemaRef(ErrorResponseBody{}))
 
-	api.Spec.GetComponents().AddSecurityScheme("api_key", &v310.SecurityScheme{
-		Type: v310.APIKeySecuritySchemeType,
+	api.Spec.GetComponents().AddSecurityScheme("api_key", &v320.SecurityScheme{
+		Type: v320.APIKeySecuritySchemeType,
 		In:   "header",
 		Name: "X-API-Key",
 	})

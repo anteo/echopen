@@ -1,9 +1,9 @@
-package v310
+package v320
 
-// 4.8.16 https://spec.openapis.org/oas/v3.1.0#responses-object
+// 4.8.16 https://spec.openapis.org/oas/v3.2.0#responses-object
 type Responses map[string]*Ref[Response]
 
-// 4.8.17 https://spec.openapis.org/oas/v3.1.0#response-object
+// 4.8.17 https://spec.openapis.org/oas/v3.2.0#response-object
 type Response struct {
 	Description string                      `json:"description,omitempty" yaml:"description,omitempty"`
 	Headers     map[string]*Ref[Header]     `json:"headers,omitempty" yaml:"headers,omitempty"`

@@ -7,12 +7,12 @@ import (
 	"strings"
 	"time"
 
-	v310 "github.com/anteo/echopen/openapi/v3.1.0"
+	v320 "github.com/anteo/echopen/openapi/v3.2.0"
 	"github.com/gofrs/uuid"
 )
 
 // ToSchemaRef takes a target value, extracts the type information, and returns a SchemaRef for that type
-func (w *APIWrapper) ToSchemaRef(target interface{}) *v310.Ref[v310.Schema] {
+func (w *APIWrapper) ToSchemaRef(target interface{}) *v320.Ref[v320.Schema] {
 	// Get the type of the target value
 	typ := reflect.TypeOf(target)
 
@@ -23,7 +23,7 @@ func (w *APIWrapper) ToSchemaRef(target interface{}) *v310.Ref[v310.Schema] {
 // TypeToSchemaRef takes a reflected type and returns a SchemaRef.
 // Where possible a Ref will be returned instead of a Value.
 // Struct names are assumed to be unique and thus conform to the same schema
-func (w *APIWrapper) TypeToSchemaRef(typ reflect.Type) *v310.Ref[v310.Schema] {
+func (w *APIWrapper) TypeToSchemaRef(typ reflect.Type) *v320.Ref[v320.Schema] {
 	// Check if the provided type is a pointer
 	if typ.Kind() == reflect.Pointer {
 		// Return a SchemaRef for the pointed value instead
@@ -32,75 +32,75 @@ func (w *APIWrapper) TypeToSchemaRef(typ reflect.Type) *v310.Ref[v310.Schema] {
 		name := typ.Name()
 		if name != "" { // named struct → component
 			if ref, ok := w.schemaMap[typ]; ok {
-				return &v310.Ref[v310.Schema]{Ref: ref}
+				return &v320.Ref[v320.Schema]{Ref: ref}
 			}
 			// Pre-register to break cycles
 			refStr := fmt.Sprintf("#/components/schemas/%s", name)
 			w.schemaMap[typ] = refStr
 			// Add a placeholder so refs are valid during recursion
-			w.Spec.GetComponents().AddSchema(name, &v310.Schema{Type: "object"})
+			w.Spec.GetComponents().AddSchema(name, &v320.Schema{Type: "object"})
 
 			// Now build the real schema
 			schema := w.TypeToSchema(typ)
 			// Overwrite the placeholder with the actual schema
 			w.Spec.GetComponents().AddSchema(name, schema)
 
-			return &v310.Ref[v310.Schema]{Ref: refStr}
+			return &v320.Ref[v320.Schema]{Ref: refStr}
 		}
 
 		// Anonymous struct or not an object type, return actual schema instead
-		return &v310.Ref[v310.Schema]{Value: w.TypeToSchema(typ)}
+		return &v320.Ref[v320.Schema]{Value: w.TypeToSchema(typ)}
 	} else {
 		// Not a pointer or a struct,
-		return &v310.Ref[v310.Schema]{Value: w.TypeToSchema(typ)}
+		return &v320.Ref[v320.Schema]{Value: w.TypeToSchema(typ)}
 	}
 }
 
 // TypeToSchema looks up the schema type for a given reflected type
-func (w *APIWrapper) TypeToSchema(typ reflect.Type) *v310.Schema {
+func (w *APIWrapper) TypeToSchema(typ reflect.Type) *v320.Schema {
 	switch typ.Kind() {
 	case reflect.String:
-		return &v310.Schema{Type: "string", SourceType: typ}
+		return &v320.Schema{Type: "string", SourceType: typ}
 	case reflect.Int8:
-		return &v310.Schema{Type: "integer", Format: "int8", SourceType: typ}
+		return &v320.Schema{Type: "integer", Format: "int8", SourceType: typ}
 	case reflect.Int16:
-		return &v310.Schema{Type: "integer", Format: "int16", SourceType: typ}
+		return &v320.Schema{Type: "integer", Format: "int16", SourceType: typ}
 	case reflect.Int32:
-		return &v310.Schema{Type: "integer", Format: "int32", SourceType: typ}
+		return &v320.Schema{Type: "integer", Format: "int32", SourceType: typ}
 	case reflect.Int64:
-		return &v310.Schema{Type: "integer", Format: "int64", SourceType: typ}
+		return &v320.Schema{Type: "integer", Format: "int64", SourceType: typ}
 	case reflect.Uint8:
-		return &v310.Schema{Type: "integer", Format: "char", SourceType: typ}
+		return &v320.Schema{Type: "integer", Format: "char", SourceType: typ}
 	case reflect.Uint16:
-		return &v310.Schema{Type: "integer", Format: "uint16", SourceType: typ}
+		return &v320.Schema{Type: "integer", Format: "uint16", SourceType: typ}
 	case reflect.Uint32:
-		return &v310.Schema{Type: "integer", Format: "uint32", SourceType: typ}
+		return &v320.Schema{Type: "integer", Format: "uint32", SourceType: typ}
 	case reflect.Uint64:
-		return &v310.Schema{Type: "integer", Format: "uint64", SourceType: typ}
+		return &v320.Schema{Type: "integer", Format: "uint64", SourceType: typ}
 	case reflect.Int, reflect.Uint:
-		return &v310.Schema{Type: "integer", SourceType: typ}
+		return &v320.Schema{Type: "integer", SourceType: typ}
 	case reflect.Bool:
-		return &v310.Schema{Type: "boolean", SourceType: typ}
+		return &v320.Schema{Type: "boolean", SourceType: typ}
 	case reflect.Float32:
-		return &v310.Schema{Type: "number", Format: "float", SourceType: typ}
+		return &v320.Schema{Type: "number", Format: "float", SourceType: typ}
 	case reflect.Float64:
-		return &v310.Schema{Type: "number", Format: "double", SourceType: typ}
+		return &v320.Schema{Type: "number", Format: "double", SourceType: typ}
 	case reflect.Map:
 		if typ.Elem().Kind() != reflect.Interface {
-			return &v310.Schema{Type: "object", AdditionalProperties: w.TypeToSchemaRef(typ.Elem()), SourceType: typ}
+			return &v320.Schema{Type: "object", AdditionalProperties: w.TypeToSchemaRef(typ.Elem()), SourceType: typ}
 		}
-		return &v310.Schema{Type: "object", SourceType: typ}
+		return &v320.Schema{Type: "object", SourceType: typ}
 	case reflect.Interface:
-		return &v310.Schema{Type: "object", SourceType: typ}
+		return &v320.Schema{Type: "object", SourceType: typ}
 	case reflect.Array, reflect.Slice:
 		if typ == reflect.TypeOf(uuid.UUID{}) {
-			return &v310.Schema{Type: "string", Format: "uuid", SourceType: typ}
+			return &v320.Schema{Type: "string", Format: "uuid", SourceType: typ}
 		}
-		return &v310.Schema{Type: "array", Items: w.TypeToSchemaRef(typ.Elem()), SourceType: typ}
+		return &v320.Schema{Type: "array", Items: w.TypeToSchemaRef(typ.Elem()), SourceType: typ}
 	case reflect.Struct:
 		// Get schema for struct including contained fields (assume json)
 		if typ == reflect.TypeOf(time.Time{}) {
-			return &v310.Schema{Type: "string", Format: "date-time", SourceType: typ}
+			return &v320.Schema{Type: "string", Format: "date-time", SourceType: typ}
 		}
 		return w.StructTypeToSchema(typ, "json")
 	case reflect.Pointer:
@@ -113,17 +113,17 @@ func (w *APIWrapper) TypeToSchema(typ reflect.Type) *v310.Schema {
 
 // StructTypeToSchema iterates over struct fields to build a schema.
 // Assumes JSON content type.
-func (w *APIWrapper) StructTypeToSchema(target reflect.Type, nameTag string) *v310.Schema {
+func (w *APIWrapper) StructTypeToSchema(target reflect.Type, nameTag string) *v320.Schema {
 	// Schema object for direct fields within the struct
-	s := &v310.Schema{
+	s := &v320.Schema{
 		Type:       "object",
-		Properties: map[string]*v310.Ref[v310.Schema]{},
+		Properties: map[string]*v320.Ref[v320.Schema]{},
 		SourceType: target,
 	}
 
 	// Schema object for composition members
-	a := &v310.Schema{
-		AllOf:      []*v310.Ref[v310.Schema]{},
+	a := &v320.Schema{
+		AllOf:      []*v320.Ref[v320.Schema]{},
 		SourceType: target,
 	}
 
@@ -166,29 +166,29 @@ func (w *APIWrapper) StructTypeToSchema(target reflect.Type, nameTag string) *v3
 		// Mark composition as an object
 		a.Type = "object"
 		// Add the schema for direct field members to the allOf array and return
-		a.AllOf = append(a.AllOf, &v310.Ref[v310.Schema]{Value: s})
+		a.AllOf = append(a.AllOf, &v320.Ref[v320.Schema]{Value: s})
 		return a
 	}
 	return s
 }
 
-func (w *APIWrapper) StructFieldToSchemaRef(f reflect.StructField) *v310.Ref[v310.Schema] {
+func (w *APIWrapper) StructFieldToSchemaRef(f reflect.StructField) *v320.Ref[v320.Schema] {
 	if refStr := getEchoTag(f, "ref"); refStr != "" {
-		return &v310.Ref[v310.Schema]{Ref: refStr}
+		return &v320.Ref[v320.Schema]{Ref: refStr}
 	}
 	// Handle swagger/openapi override tags first to avoid registering component schemas prematurely.
 	if t := getEchoTag(f, "type"); t != "" {
-		inline := &v310.Schema{Type: v310.SchemaType(t)}
+		inline := &v320.Schema{Type: v320.SchemaType(t)}
 		if fmtTag := getEchoTag(f, "format"); fmtTag != "" {
-			inline.Format = v310.SchemaFormat(fmtTag)
+			inline.Format = v320.SchemaFormat(fmtTag)
 		}
-		ref := &v310.Ref[v310.Schema]{Value: inline}
+		ref := &v320.Ref[v320.Schema]{Value: inline}
 
 		// Nullable support for inline schema: oneOf [inline, null]
 		if n := getEchoTag(f, "nullable"); n == "true" {
-			ref.Value = &v310.Schema{OneOf: []*v310.Ref[v310.Schema]{
+			ref.Value = &v320.Schema{OneOf: []*v320.Ref[v320.Schema]{
 				{Value: inline},
-				{Value: &v310.Schema{Type: v310.NullSchemaType}},
+				{Value: &v320.Schema{Type: v320.NullSchemaType}},
 			}}
 		}
 
@@ -226,18 +226,18 @@ func (w *APIWrapper) StructFieldToSchemaRef(f reflect.StructField) *v310.Ref[v31
 		if n := getEchoTag(f, "nullable"); n == "true" {
 			// If field resolved to a $ref, wrap it into a oneOf with null
 			if ref.Value == nil && ref.Ref != "" {
-				ref = &v310.Ref[v310.Schema]{Value: &v310.Schema{
-					OneOf: []*v310.Ref[v310.Schema]{
+				ref = &v320.Ref[v320.Schema]{Value: &v320.Schema{
+					OneOf: []*v320.Ref[v320.Schema]{
 						{Ref: ref.Ref},
-						{Value: &v310.Schema{Type: v310.NullSchemaType}},
+						{Value: &v320.Schema{Type: v320.NullSchemaType}},
 					},
 				}}
 			} else if ref.Value != nil {
 				origType := ref.Value.Type
 				origFormat := ref.Value.Format
-				ref.Value.OneOf = []*v310.Ref[v310.Schema]{
-					{Value: &v310.Schema{Type: origType, Format: origFormat}},
-					{Value: &v310.Schema{Type: v310.NullSchemaType}},
+				ref.Value.OneOf = []*v320.Ref[v320.Schema]{
+					{Value: &v320.Schema{Type: origType, Format: origFormat}},
+					{Value: &v320.Schema{Type: v320.NullSchemaType}},
 				}
 				// Clear base type/format to avoid conflicting with oneOf
 				ref.Value.Type = ""
@@ -277,16 +277,16 @@ func ExtractJSONTags(field reflect.StructField) (string, bool) {
 
 // ExtractValidationRules extracts known rules from the "validate" tag.
 // Assumes use of github.com/go-playground/validator/v10
-func ExtractValidationRules(field reflect.StructField, schema *v310.Schema) {
+func ExtractValidationRules(field reflect.StructField, schema *v320.Schema) {
 	validation := strings.Split(field.Tag.Get("validate"), ",")
 
 	for _, val := range validation {
 		if strings.HasPrefix(val, "max=") || strings.HasPrefix(val, "lte=") {
 			max, _ := strconv.ParseInt(strings.Split(val, "=")[1], 10, 64)
 			switch schema.Type {
-			case v310.StringSchemaType:
+			case v320.StringSchemaType:
 				schema.MaxLength = PtrTo(int(max))
-			case v310.NumberSchemaType, "integer":
+			case v320.NumberSchemaType, "integer":
 				schema.Maximum = PtrTo(float64(max))
 			case "array":
 				schema.MaxItems = PtrTo(int(max))
@@ -294,7 +294,7 @@ func ExtractValidationRules(field reflect.StructField, schema *v310.Schema) {
 		} else if strings.HasPrefix(val, "min=") || strings.HasPrefix(val, "gte=") {
 			min, _ := strconv.ParseInt(strings.Split(val, "=")[1], 10, 64)
 			switch schema.Type {
-			case v310.StringSchemaType:
+			case v320.StringSchemaType:
 				schema.MinLength = PtrTo(int(min))
 			case "number", "integer":
 				schema.Minimum = PtrTo(float64(min))

@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/anteo/echopen"
-	v310 "github.com/anteo/echopen/openapi/v3.1.0"
+	v320 "github.com/anteo/echopen/openapi/v3.2.0"
 	"github.com/labstack/echo/v4"
 )
 
@@ -17,40 +17,40 @@ func main() {
 		"Swagger Petstore",
 		"1.0.0",
 		echopen.WithSpecDescription(Description),
-		echopen.WithSpecLicense(&v310.License{Name: "Apache 2.0", URL: "http://www.apache.org/licenses/LICENSE-2.0.html"}),
+		echopen.WithSpecLicense(&v320.License{Name: "Apache 2.0", URL: "http://www.apache.org/licenses/LICENSE-2.0.html"}),
 		echopen.WithSpecTermsOfService("http://swagger.io/terms/"),
-		echopen.WithSpecContact(&v310.Contact{Email: "apiteam@swagger.io"}),
-		echopen.WithSpecServer(&v310.Server{URL: "http://petstore.swagger.io/v2"}),
-		echopen.WithSpecExternalDocs(&v310.ExternalDocs{
+		echopen.WithSpecContact(&v320.Contact{Email: "apiteam@swagger.io"}),
+		echopen.WithSpecServer(&v320.Server{URL: "http://petstore.swagger.io/v2"}),
+		echopen.WithSpecExternalDocs(&v320.ExternalDocs{
 			Description: "Find out more about Swagger",
 			URL:         "http://swagger.io",
 		}),
-		echopen.WithSpecTag(&v310.Tag{
+		echopen.WithSpecTag(&v320.Tag{
 			Name:        "pet",
 			Description: "Everything about your Pets",
-			ExternalDocs: &v310.ExternalDocs{
+			ExternalDocs: &v320.ExternalDocs{
 				Description: "Find out more",
 				URL:         "http://swagger.io",
 			},
 		}),
-		echopen.WithSpecTag(&v310.Tag{
+		echopen.WithSpecTag(&v320.Tag{
 			Name:        "store",
 			Description: "Access to Petstore orders",
 		}),
-		echopen.WithSpecTag(&v310.Tag{
+		echopen.WithSpecTag(&v320.Tag{
 			Name:        "user",
 			Description: "Operations about user",
-			ExternalDocs: &v310.ExternalDocs{
+			ExternalDocs: &v320.ExternalDocs{
 				Description: "Find out more about our store",
 				URL:         "http://swagger.io",
 			},
 		}),
 	)
 
-	api.Spec.GetComponents().AddSecurityScheme("petstore_auth", &v310.SecurityScheme{
-		Type: v310.OAuth2SecuritySchemeType,
-		Flows: &v310.OAuthFlows{
-			Implicit: &v310.OAuthFlow{
+	api.Spec.GetComponents().AddSecurityScheme("petstore_auth", &v320.SecurityScheme{
+		Type: v320.OAuth2SecuritySchemeType,
+		Flows: &v320.OAuthFlows{
+			Implicit: &v320.OAuthFlow{
 				AuthorizationURL: "http://petstore.swagger.io/oauth/dialog",
 				Scopes: map[string]string{
 					"write:pets": "modify pets in your account",
@@ -60,14 +60,14 @@ func main() {
 		},
 	})
 
-	api.Spec.GetComponents().AddSecurityScheme("api_key", &v310.SecurityScheme{
-		Type: v310.APIKeySecuritySchemeType,
+	api.Spec.GetComponents().AddSecurityScheme("api_key", &v320.SecurityScheme{
+		Type: v320.APIKeySecuritySchemeType,
 		Name: "api_key",
 		In:   "header",
 	})
 
-	api.Spec.GetComponents().AddRequestBody("Pet", &v310.RequestBody{
-		Content: map[string]*v310.MediaTypeObject{
+	api.Spec.GetComponents().AddRequestBody("Pet", &v320.RequestBody{
+		Content: map[string]*v320.MediaTypeObject{
 			echo.MIMEApplicationJSON: {
 				Schema: api.ToSchemaRef(Pet{}),
 			},
@@ -75,8 +75,8 @@ func main() {
 		Required: true,
 	})
 
-	api.Spec.GetComponents().AddRequestBody("UserArray", &v310.RequestBody{
-		Content: map[string]*v310.MediaTypeObject{
+	api.Spec.GetComponents().AddRequestBody("UserArray", &v320.RequestBody{
+		Content: map[string]*v320.MediaTypeObject{
 			echo.MIMEApplicationJSON: {
 				Schema: api.ToSchemaRef([]User{}),
 			},
@@ -176,7 +176,7 @@ func main() {
 		echopen.WithSummary("uploads an image"),
 		echopen.WithPathParameter("petId", "ID of pet to update", int64(1234)),
 		echopen.WithSecurityRequirement("petstore_auth", []string{"write:pets", "read:pets"}),
-		echopen.WithRequestBodySchema("application/octet-stream", &v310.Schema{
+		echopen.WithRequestBodySchema("application/octet-stream", &v320.Schema{
 			Type:   "string",
 			Format: "binary",
 		}),

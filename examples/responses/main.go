@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/anteo/echopen"
-	v310 "github.com/anteo/echopen/openapi/v3.1.0"
+	v320 "github.com/anteo/echopen/openapi/v3.2.0"
 	"github.com/labstack/echo/v4"
 )
 
@@ -14,7 +14,7 @@ func main() {
 		"Responses",
 		"1.0.0",
 		echopen.WithSpecDescription("Example to show reused responses, loosely based on the Petstore examples."),
-		echopen.WithSpecTag(&v310.Tag{Name: "pets", Description: "Pets endpoints"}),
+		echopen.WithSpecTag(&v320.Tag{Name: "pets", Description: "Pets endpoints"}),
 	)
 
 	api.Spec.GetComponents().AddJSONResponse("UnexpectedErrorResponse", "unexpected error", api.ToSchemaRef(Error{}))
@@ -52,8 +52,8 @@ func main() {
 		// echopen.WithPathParameter(&echopen.PathParameterConfig{
 		// 	Name:        "id",
 		// 	Description: "ID of pet to fetch",
-		// 	Schema: &v310.Schema{
-		// 		Type:   v310.IntegerSchemaType,
+		// 	Schema: &v320.Schema{
+		// 		Type:   v320.IntegerSchemaType,
 		// 		Format: "int64",
 		// 	},
 		// }),
@@ -71,8 +71,8 @@ func main() {
 		// echopen.WithPathParameter(&echopen.PathParameterConfig{
 		// 	Name:        "id",
 		// 	Description: "ID of pet to delete",
-		// 	Schema: &v310.Schema{
-		// 		Type:   v310.IntegerSchemaType,
+		// 	Schema: &v320.Schema{
+		// 		Type:   v320.IntegerSchemaType,
 		// 		Format: "int64",
 		// 	},
 		// }),

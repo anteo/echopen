@@ -1,8 +1,8 @@
-package v310
+package v320
 
 import "github.com/labstack/echo/v4"
 
-// 4.8.7 https://spec.openapis.org/oas/v3.1.0#components-object
+// 4.8.7 https://spec.openapis.org/oas/v3.2.0#components-object
 type Components struct {
 	Schemas         map[string]*Schema         `json:"schemas,omitempty" yaml:"schemas,omitempty"`
 	Responses       map[string]*Response       `json:"responses,omitempty" yaml:"responses,omitempty"`

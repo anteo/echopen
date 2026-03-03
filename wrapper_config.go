@@ -3,7 +3,7 @@ package echopen
 import (
 	"strings"
 
-	v310 "github.com/anteo/echopen/openapi/v3.1.0"
+	v320 "github.com/anteo/echopen/openapi/v3.2.0"
 	"github.com/labstack/echo/v4"
 )
 
@@ -31,36 +31,36 @@ func WithSpecTermsOfService(tos string) WrapperConfigFunc {
 	}
 }
 
-func (a *APIWrapper) SetSpecLicense(l *v310.License) {
+func (a *APIWrapper) SetSpecLicense(l *v320.License) {
 	a.Spec.Info.License = l
 }
 
-func WithSpecLicense(l *v310.License) WrapperConfigFunc {
+func WithSpecLicense(l *v320.License) WrapperConfigFunc {
 	return func(a *APIWrapper) *APIWrapper {
 		a.SetSpecLicense(l)
 		return a
 	}
 }
 
-func WithSpecTag(t *v310.Tag) WrapperConfigFunc {
+func WithSpecTag(t *v320.Tag) WrapperConfigFunc {
 	return func(a *APIWrapper) *APIWrapper {
 		a.Spec.AddTag(t)
 		return a
 	}
 }
 
-func (a *APIWrapper) SetSpecContact(c *v310.Contact) {
+func (a *APIWrapper) SetSpecContact(c *v320.Contact) {
 	a.Spec.Info.Contact = c
 }
 
-func WithSpecContact(c *v310.Contact) WrapperConfigFunc {
+func WithSpecContact(c *v320.Contact) WrapperConfigFunc {
 	return func(a *APIWrapper) *APIWrapper {
 		a.SetSpecContact(c)
 		return a
 	}
 }
 
-func WithSpecServer(s *v310.Server) WrapperConfigFunc {
+func WithSpecServer(s *v320.Server) WrapperConfigFunc {
 	return func(a *APIWrapper) *APIWrapper {
 		s.URL += a.Config.BaseURL
 		a.Spec.AddServer(s)
@@ -72,11 +72,11 @@ func (a *APIWrapper) SetErrorHandler(h echo.HTTPErrorHandler) {
 	a.Engine.HTTPErrorHandler = h
 }
 
-func (a *APIWrapper) SetSpecExternalDocs(d *v310.ExternalDocs) {
+func (a *APIWrapper) SetSpecExternalDocs(d *v320.ExternalDocs) {
 	a.Spec.ExternalDocs = d
 }
 
-func WithSpecExternalDocs(d *v310.ExternalDocs) WrapperConfigFunc {
+func WithSpecExternalDocs(d *v320.ExternalDocs) WrapperConfigFunc {
 	return func(a *APIWrapper) *APIWrapper {
 		a.SetSpecExternalDocs(d)
 		return a

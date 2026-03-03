@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/anteo/echopen"
-	v310 "github.com/anteo/echopen/openapi/v3.1.0"
+	v320 "github.com/anteo/echopen/openapi/v3.2.0"
 	"github.com/gofrs/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/log"
@@ -40,7 +40,7 @@ func main() {
 		"Responses",
 		"1.0.0",
 		echopen.WithSpecDescription("Example to show a CRUD-like API, based on Todo lists."),
-		echopen.WithSpecTag(&v310.Tag{Name: "todo", Description: "Todo endpoints"}),
+		echopen.WithSpecTag(&v320.Tag{Name: "todo", Description: "Todo endpoints"}),
 	)
 
 	api.Engine.Logger.SetLevel(log.DEBUG)

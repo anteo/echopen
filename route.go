@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"strings"
 
-	v310 "github.com/anteo/echopen/openapi/v3.1.0"
+	v320 "github.com/anteo/echopen/openapi/v3.2.0"
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 )
@@ -14,14 +14,14 @@ import (
 type RouteWrapper struct {
 	API               *APIWrapper
 	Group             *GroupWrapper
-	Operation         *v310.Operation
-	PathItem          *v310.PathItem
+	Operation         *v320.Operation
+	PathItem          *v320.PathItem
 	Handler           echo.HandlerFunc
 	Middlewares       []echo.MiddlewareFunc
 	Route             *echo.Route
-	QuerySchema       *v310.Schema
-	FormSchema        *v310.Schema
-	RequestBodySchema map[string]*v310.Schema
+	QuerySchema       *v320.Schema
+	FormSchema        *v320.Schema
+	RequestBodySchema map[string]*v320.Schema
 }
 
 // Operation validation middleware that is applied to all routes
@@ -70,7 +70,7 @@ func (r *RouteWrapper) middleware() echo.MiddlewareFunc {
 			// Extract path, header, and cookie parameters (query dealt with as a struct)
 			// --------------------------------------------------------------------------------
 			for _, ref := range r.Operation.Parameters {
-				param := ref.DeRef(r.API.Spec.Components).(*v310.Parameter)
+				param := ref.DeRef(r.API.Spec.Components).(*v320.Parameter)
 
 				switch param.In {
 				case "path":
@@ -92,7 +92,7 @@ func (r *RouteWrapper) middleware() echo.MiddlewareFunc {
 					if param.Schema.Type == "array" {
 						hdrs := []interface{}{}
 						for _, h := range v {
-							hdrs = append(hdrs, param.Schema.Items.DeRef(r.API.Spec.Components).(*v310.Schema).FromString(h))
+							hdrs = append(hdrs, param.Schema.Items.DeRef(r.API.Spec.Components).(*v320.Schema).FromString(h))
 						}
 						c.Set(fmt.Sprintf("header.%s", param.Name), hdrs)
 					} else {

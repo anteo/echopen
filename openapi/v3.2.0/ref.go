@@ -1,14 +1,14 @@
-package v310
+package v320
 
 import (
 	"encoding/json"
 	"strings"
 )
 
-// 4.8.23 https://spec.openapis.org/oas/v3.1.0#reference-object
+// 4.8.23 https://spec.openapis.org/oas/v3.2.0#reference-object
 type Ref[T any] struct {
-	Ref   string
-	Value *T
+	Ref   string `json:"ref" yaml:"ref"`
+	Value *T     `json:"value,omitempty" yaml:"value,omitempty"`
 }
 
 func (r *Ref[T]) DeRef(c *Components) interface{} {
@@ -70,4 +70,25 @@ func (r *Ref[T]) MarshalYAML() (interface{}, error) {
 	} else {
 		return r.Value, nil
 	}
+}
+
+func (r *Ref[T]) UnmarshalJSON(data []byte) error {
+	// Try to unmarshal as a $ref object
+	var refObj struct {
+		Ref string `json:"$ref"`
+	}
+	if err := json.Unmarshal(data, &refObj); err == nil && refObj.Ref != "" {
+		r.Ref = refObj.Ref
+		r.Value = nil
+		return nil
+	}
+
+	// Otherwise, unmarshal as the value directly
+	var value T
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	r.Value = &value
+	r.Ref = ""
+	return nil
 }
