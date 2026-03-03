@@ -56,6 +56,22 @@ func (w *APIWrapper) TypeToSchemaRef(typ reflect.Type) *v320.Ref[v320.Schema] {
 	}
 }
 
+// TypesToSchemaRef converts multiple reflect.Type values into a schema reference using anyOf.
+func (w *APIWrapper) TypesToSchemaRef(types ...reflect.Type) *v320.Ref[v320.Schema] {
+	var refs []*v320.Ref[v320.Schema]
+	for _, typ := range types {
+		refs = append(refs, w.TypeToSchemaRef(typ))
+	}
+	if len(refs) > 0 {
+		return &v320.Ref[v320.Schema]{
+			Value: &v320.Schema{
+				AnyOf: refs,
+			},
+		}
+	}
+	return refs[0]
+}
+
 // TypeToSchema looks up the schema type for a given reflected type
 func (w *APIWrapper) TypeToSchema(typ reflect.Type) *v320.Schema {
 	switch typ.Kind() {
