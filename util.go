@@ -3,6 +3,8 @@ package echopen
 import (
 	"regexp"
 	"strings"
+
+	"github.com/iancoleman/strcase"
 )
 
 var reParam = regexp.MustCompile(`\:(\w+)`)
@@ -15,9 +17,9 @@ func genOpID(method string, path string) string {
 	for _, p := range parts {
 		if p != "" {
 			if p[0] == ':' {
-				s = s + "By" + strings.ToUpper(string(p[1])) + p[2:]
+				s = s + "By" + strcase.ToCamel(p[1:])
 			} else {
-				s = s + strings.ToUpper(string(p[0])) + p[1:]
+				s = s + strcase.ToCamel(p)
 			}
 		}
 	}
