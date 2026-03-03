@@ -111,7 +111,11 @@ func (w *APIWrapper) ServeJSONSpec(path string, filters ...SpecFilterFunc) *echo
 	return w.Engine.GET(path, handler)
 }
 
-func (w *APIWrapper) ServeSwaggerUI(path string, schemaPath string, version string) *echo.Route {
+func (w *APIWrapper) ServeSwaggerUI(path string, schemaPath string, version string, baseUrlFormat string) *echo.Route {
+	if baseUrlFormat == "" {
+		baseUrlFormat = "https://cdn.jsdelivr.net/npm/swagger-ui@%s/dist"
+	}
+	baseUrl := fmt.Sprintf(baseUrlFormat, version)
 	return w.Engine.GET(path, func(c echo.Context) error {
 		return c.HTML(http.StatusOK, fmt.Sprintf(`
 			<!DOCTYPE html>
@@ -119,13 +123,13 @@ func (w *APIWrapper) ServeSwaggerUI(path string, schemaPath string, version stri
 				<head>
 					<meta charset="UTF-8">
 					<title>%[1]s</title>
-					<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/%[3]s/swagger-ui.min.css" />
+					<link rel="stylesheet" type="text/css" href="%[3]s/swagger-ui.min.css" />
 				</head>
 
 				<body>
 					<div id="swagger-ui"></div>
-					<script src="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/%[3]s/swagger-ui-bundle.min.js" charset="UTF-8"> </script>
-					<script src="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/%[3]s/swagger-ui-standalone-preset.min.js" charset="UTF-8"> </script>
+					<script src="%[3]s/swagger-ui-bundle.min.js" charset="UTF-8"> </script>
+					<script src="%[3]s/swagger-ui-standalone-preset.min.js" charset="UTF-8"> </script>
 					<script>
 						window.onload = function() {
 							window.ui = SwaggerUIBundle({
@@ -145,7 +149,7 @@ func (w *APIWrapper) ServeSwaggerUI(path string, schemaPath string, version stri
 					</script>
 				</body>
 			</html>
-		`, w.Spec.Info.Title, schemaPath, version))
+		`, w.Spec.Info.Title, schemaPath, baseUrl))
 	})
 }
 
