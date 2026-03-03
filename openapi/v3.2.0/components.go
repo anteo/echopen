@@ -4,16 +4,17 @@ import "github.com/labstack/echo/v4"
 
 // 4.8.7 https://spec.openapis.org/oas/v3.2.0#components-object
 type Components struct {
-	Schemas         map[string]*Schema         `json:"schemas,omitempty" yaml:"schemas,omitempty"`
-	Responses       map[string]*Response       `json:"responses,omitempty" yaml:"responses,omitempty"`
-	Parameters      map[string]*Parameter      `json:"parameters,omitempty" yaml:"parameters,omitempty"`
-	Examples        map[string]*Example        `json:"examples,omitempty" yaml:"examples,omitempty"`
-	RequestBodies   map[string]*RequestBody    `json:"requestBodies,omitempty" yaml:"requestBodies,omitempty"`
-	Headers         map[string]*Header         `json:"headers,omitempty" yaml:"headers,omitempty"`
-	SecuritySchemes map[string]*SecurityScheme `json:"securitySchemes,omitempty" yaml:"securitySchemes,omitempty"`
-	Links           map[string]*Link           `json:"links,omitempty" yaml:"links,omitempty"`
-	Callbacks       map[string]*Callback       `json:"callbacks,omitempty" yaml:"callbacks,omitempty"`
-	PathItems       map[string]*PathItem       `json:"pathItems,omitempty" yaml:"pathItems,omitempty"`
+	Schemas         map[string]*Schema          `json:"schemas,omitempty" yaml:"schemas,omitempty"`
+	Responses       map[string]*Response        `json:"responses,omitempty" yaml:"responses,omitempty"`
+	Parameters      map[string]*Parameter       `json:"parameters,omitempty" yaml:"parameters,omitempty"`
+	Examples        map[string]*Example         `json:"examples,omitempty" yaml:"examples,omitempty"`
+	RequestBodies   map[string]*RequestBody     `json:"requestBodies,omitempty" yaml:"requestBodies,omitempty"`
+	Headers         map[string]*Header          `json:"headers,omitempty" yaml:"headers,omitempty"`
+	SecuritySchemes map[string]*SecurityScheme  `json:"securitySchemes,omitempty" yaml:"securitySchemes,omitempty"`
+	Links           map[string]*Link            `json:"links,omitempty" yaml:"links,omitempty"`
+	Callbacks       map[string]*Callback        `json:"callbacks,omitempty" yaml:"callbacks,omitempty"`
+	PathItems       map[string]*PathItem        `json:"pathItems,omitempty" yaml:"pathItems,omitempty"`
+	MediaTypes      map[string]*MediaTypeObject `json:"mediaTypes,omitempty" yaml:"mediaTypes,omitempty"`
 }
 
 func (c *Components) GetSchema(name string) *Schema {
@@ -54,8 +55,12 @@ func (c *Components) AddJSONResponse(name string, desc string, s *Ref[Schema]) {
 	}
 	c.Responses[name] = &Response{
 		Description: desc,
-		Content: map[string]*MediaTypeObject{
-			echo.MIMEApplicationJSON: {Schema: s},
+		Content: map[string]*Ref[MediaTypeObject]{
+			echo.MIMEApplicationJSON: {
+				Value: &MediaTypeObject{
+					Schema: s,
+				},
+			},
 		},
 	}
 }

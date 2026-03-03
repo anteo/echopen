@@ -46,18 +46,20 @@ type Paths map[string]*Ref[PathItem]
 
 // 4.8.9 https://spec.openapis.org/oas/v3.2.0#path-item-object
 type PathItem struct {
-	Summary     string          `json:"summary,omitempty" yaml:"summary,omitempty"`
-	Description string          `json:"description,omitempty" yaml:"description,omitempty"`
-	Get         *Operation      `json:"get,omitempty" yaml:"get,omitempty"`
-	Put         *Operation      `json:"put,omitempty" yaml:"put,omitempty"`
-	Post        *Operation      `json:"post,omitempty" yaml:"post,omitempty"`
-	Delete      *Operation      `json:"delete,omitempty" yaml:"delete,omitempty"`
-	Options     *Operation      `json:"options,omitempty" yaml:"options,omitempty"`
-	Head        *Operation      `json:"head,omitempty" yaml:"head,omitempty"`
-	Patch       *Operation      `json:"patch,omitempty" yaml:"patch,omitempty"`
-	Trace       *Operation      `json:"trace,omitempty" yaml:"trace,omitempty"`
-	Servers     []*Server       `json:"servers,omitempty" yaml:"servers,omitempty"`
-	Parameters  *Ref[Parameter] `json:"parameters,omitempty" yaml:"parameters,omitempty"`
+	Summary              string               `json:"summary,omitempty" yaml:"summary,omitempty"`
+	Description          string               `json:"description,omitempty" yaml:"description,omitempty"`
+	Get                  *Operation           `json:"get,omitempty" yaml:"get,omitempty"`
+	Put                  *Operation           `json:"put,omitempty" yaml:"put,omitempty"`
+	Post                 *Operation           `json:"post,omitempty" yaml:"post,omitempty"`
+	Delete               *Operation           `json:"delete,omitempty" yaml:"delete,omitempty"`
+	Options              *Operation           `json:"options,omitempty" yaml:"options,omitempty"`
+	Head                 *Operation           `json:"head,omitempty" yaml:"head,omitempty"`
+	Patch                *Operation           `json:"patch,omitempty" yaml:"patch,omitempty"`
+	Trace                *Operation           `json:"trace,omitempty" yaml:"trace,omitempty"`
+	Query                *Operation           `json:"query,omitempty" yaml:"query,omitempty"`
+	AdditionalOperations map[string]Operation `json:"additionalOperations,omitempty" yaml:"additionalOperations,omitempty"`
+	Servers              []*Server            `json:"servers,omitempty" yaml:"servers,omitempty"`
+	Parameters           *Ref[Parameter]      `json:"parameters,omitempty" yaml:"parameters,omitempty"`
 }
 
 // 4.8.11 https://spec.openapis.org/oas/v3.2.0#external-documentation-object
@@ -102,10 +104,13 @@ type RequestBody struct {
 
 // 4.8.14 https://spec.openapis.org/oas/v3.2.0#media-type-object
 type MediaTypeObject struct {
-	Schema   *Ref[Schema]             `json:"schema,omitempty" yaml:"schema,omitempty"`
-	Example  interface{}              `json:"example,omitempty" yaml:"example,omitempty"`
-	Examples map[string]*Ref[Example] `json:"examples,omitempty" yaml:"examples,omitempty"`
-	Encoding map[string]*Encoding     `json:"encoding,omitempty" yaml:"encoding,omitempty"`
+	Schema         *Ref[Schema]             `json:"schema,omitempty" yaml:"schema,omitempty"`
+	Example        interface{}              `json:"example,omitempty" yaml:"example,omitempty"`
+	Examples       map[string]*Ref[Example] `json:"examples,omitempty" yaml:"examples,omitempty"`
+	Encoding       map[string]*Encoding     `json:"encoding,omitempty" yaml:"encoding,omitempty"`
+	ItemSchema     *Ref[Schema]             `json:"itemSchema,omitempty" yaml:"itemSchema,omitempty"`
+	PrefixEncoding []Encoding               `json:"prefixEncoding,omitempty" yaml:"prefixEncoding,omitempty"`
+	ItemEncoding   *Encoding                `json:"itemEncoding,omitempty" yaml:"itemEncoding,omitempty"`
 }
 
 // 4.8.15 https://spec.openapis.org/oas/v3.2.0#encoding-object

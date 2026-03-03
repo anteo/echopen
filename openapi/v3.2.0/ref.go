@@ -43,6 +43,8 @@ func (r *Ref[T]) DeRef(c *Components) interface{} {
 		return c.Callbacks[name]
 	case "pathItems":
 		return c.PathItems[name]
+	case "mediaTypes":
+		return c.MediaTypes[name]
 	default:
 		panic("unknown component type in ref")
 	}

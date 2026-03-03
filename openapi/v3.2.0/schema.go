@@ -19,6 +19,7 @@ type Schema struct {
 	Examples    []interface{}  `json:"examples,omitempty" yaml:"examples,omitempty"`
 	AllOf       []*Ref[Schema] `json:"allOf,omitempty" yaml:"allOf,omitempty"`
 	OneOf       []*Ref[Schema] `json:"oneOf,omitempty" yaml:"oneOf,omitempty"`
+	AnyOf       []*Ref[Schema] `json:"anyOf,omitempty" yaml:"anyOf,omitempty"`
 	XML         *XML           `json:"xml,omitempty" yaml:"xml,omitempty"`
 	SourceType  reflect.Type   `json:"-" yaml:"-"`
 

@@ -31,9 +31,11 @@ func WithResponseType(code string, description string, example interface{}) Rout
 	return func(rw *RouteWrapper) *RouteWrapper {
 		rw.Operation.AddResponse(code, &v320.Response{
 			Description: description,
-			Content: map[string]*v320.MediaTypeObject{
+			Content: map[string]*v320.Ref[v320.MediaTypeObject]{
 				echo.MIMEApplicationJSON: {
-					Schema: rw.API.TypeToSchemaRef(reflect.TypeOf(example)),
+					Value: &v320.MediaTypeObject{
+						Schema: rw.API.TypeToSchemaRef(reflect.TypeOf(example)),
+					},
 				},
 			},
 		})
@@ -63,10 +65,10 @@ func WithResponseStruct(code string, description string, target interface{}) Rou
 func WithResponseStructConfig(code string, config *ResponseStructConfig) RouteConfigFunc {
 	return func(rw *RouteWrapper) *RouteWrapper {
 		schema := rw.API.ToSchemaRef(config.Target)
-		content := map[string]*v320.MediaTypeObject{}
+		content := map[string]*v320.Ref[v320.MediaTypeObject]{}
 
 		if config.JSON {
-			content[echo.MIMEApplicationJSON] = &v320.MediaTypeObject{Schema: schema}
+			content[echo.MIMEApplicationJSON] = &v320.Ref[v320.MediaTypeObject]{Value: &v320.MediaTypeObject{Schema: schema}}
 		}
 
 		rw.Operation.AddResponse(code, &v320.Response{
@@ -82,13 +84,17 @@ func WithResponseFile(code string, description string, mime string) RouteConfigF
 	return func(rw *RouteWrapper) *RouteWrapper {
 		rw.Operation.AddResponse(code, &v320.Response{
 			Description: description,
-			Content: map[string]*v320.MediaTypeObject{
-				mime: {Schema: &v320.Ref[v320.Schema]{
-					Value: &v320.Schema{
-						Type:   v320.StringSchemaType,
-						Format: "binary",
+			Content: map[string]*v320.Ref[v320.MediaTypeObject]{
+				mime: {
+					Value: &v320.MediaTypeObject{
+						Schema: &v320.Ref[v320.Schema]{
+							Value: &v320.Schema{
+								Type:   v320.StringSchemaType,
+								Format: "binary",
+							},
+						},
 					},
-				}},
+				},
 			},
 		})
 
