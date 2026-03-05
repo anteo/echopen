@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	v320 "github.com/anteo/echopen/openapi/v3.2.0"
+	v320 "github.com/anteo/echopen/v2/openapi/v3.2.0"
 	"github.com/gofrs/uuid"
 	"github.com/stretchr/testify/assert"
 )
@@ -135,7 +135,7 @@ func TestReflectStruct(t *testing.T) {
 		{
 			Name:     "composition",
 			Target:   TestStructComposition{},
-			Expected: `{"allOf":[{"$ref":"#/components/schemas/TestStruct"},{"type":"object","required":["test2"],"properties":{"test2":{"type":"string"}}}]}`,
+			Expected: `{"allOf":[{"$ref":"#/components/schemas/TestStruct"},{"type":"object","required":["test2"],"properties":{"test2":{"type":"string"}}}],"type":"object"}`,
 		},
 		{
 			Name:     "validation",

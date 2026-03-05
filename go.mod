@@ -1,4 +1,4 @@
-module github.com/anteo/echopen
+module github.com/anteo/echopen/v2
 
 go 1.24.0
 

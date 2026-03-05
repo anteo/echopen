@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"strings"
 
-	v320 "github.com/anteo/echopen/openapi/v3.2.0"
+	v320 "github.com/anteo/echopen/v2/openapi/v3.2.0"
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 )

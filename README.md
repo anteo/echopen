@@ -2,7 +2,7 @@
 
 # echOpen
 
-Very thin wrapper around [echo](https://echo.labstack.com/) to generate OpenAPI v3.1 specs from API endpoints.
+Very thin wrapper around [echo](https://echo.labstack.com/) to generate OpenAPI v3.2 specs from API endpoints.
 
 This project uses a declarative approach to build an API spec based on the library functions, whilst retaining the full flexibility of the underlying echo engine.
 This differs from other code-generator approaches such as [oapi-codegen](https://github.com/deepmap/oapi-codegen) which generate a completely flat structure with only global or per-route middleware.
@@ -64,7 +64,7 @@ This results in the following generated specification:
 
 ```yaml
 openapi: 3.2.0
-jsonSchemaDialect: https://spec.openapis.org/oas/3.1/dialect/base
+jsonSchemaDialect: https://spec.openapis.org/oas/3.2/dialect/2025-09-17
 info:
   title: Hello World
   version: 1.0.0

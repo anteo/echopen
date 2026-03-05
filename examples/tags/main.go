@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/anteo/echopen"
-	v320 "github.com/anteo/echopen/openapi/v3.2.0"
+	"github.com/anteo/echopen/v2"
+	v320 "github.com/anteo/echopen/v2/openapi/v3.2.0"
 	"github.com/labstack/echo/v4"
 )
 
@@ -40,7 +40,7 @@ func main() {
 	api.ServeYAMLSpec("/openapi.yml", echopen.ExcludeTags("hidden"))
 	api.ServeYAMLSpec("/openapi_hidden_only.yml", echopen.IncludeTags("hidden"))
 	api.ServeYAMLSpec("/openapi_all.yml")
-	api.ServeSwaggerUI("/", "/openapi.yml", "5.10.3")
+	api.ServeSwaggerUI("/", "/openapi.yml", "5.10.3", "")
 
 	// Write the full generated spec
 	api.WriteYAMLSpec("openapi_out.yml")

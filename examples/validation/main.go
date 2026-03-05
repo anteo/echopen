@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/anteo/echopen"
-	v320 "github.com/anteo/echopen/openapi/v3.2.0"
+	"github.com/anteo/echopen/v2"
+	v320 "github.com/anteo/echopen/v2/openapi/v3.2.0"
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 )
@@ -50,7 +50,7 @@ func main() {
 
 	// Serve the generated schema
 	api.ServeYAMLSpec("/openapi.yml")
-	api.ServeSwaggerUI("/", "/openapi.yml", "5.10.3")
+	api.ServeSwaggerUI("/", "/openapi.yml", "5.10.3", "")
 
 	// Write the full generated spec
 	api.WriteYAMLSpec("openapi_out.yml")

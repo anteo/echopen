@@ -3,7 +3,7 @@ package echopen_test
 import (
 	"testing"
 
-	"github.com/anteo/echopen"
+	"github.com/anteo/echopen/v2"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 )

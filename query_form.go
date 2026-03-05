@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"reflect"
 
-	v320 "github.com/anteo/echopen/openapi/v3.2.0"
+	v320 "github.com/anteo/echopen/v2/openapi/v3.2.0"
 )
 
 // WithQueryStruct extracts type information from a provided struct to populate the OpenAPI operation parameters.
