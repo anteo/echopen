@@ -80,6 +80,23 @@ func WithRequestBodySchema(mime string, s *v320.Schema) RouteConfigFunc {
 	}
 }
 
+func WithRequestBodySchemaDescription(mime string, description string, s *v320.Schema) RouteConfigFunc {
+	return func(rw *RouteWrapper) *RouteWrapper {
+		rw.RequestBodySchema[mime] = s
+		rw.Operation.AddRequestBody(&v320.RequestBody{
+			Description: description,
+			Content: map[string]*v320.MediaTypeObject{
+				mime: {
+					Schema: &v320.Ref[v320.Schema]{
+						Value: s,
+					},
+				},
+			},
+		})
+		return rw
+	}
+}
+
 func WithRequestBodyRef(name string) RouteConfigFunc {
 	return func(rw *RouteWrapper) *RouteWrapper {
 		req := rw.API.Spec.GetComponents().GetRequestBody(name)
@@ -91,5 +108,35 @@ func WithRequestBodyRef(name string) RouteConfigFunc {
 		}
 		rw.Operation.AddRequestBodyRef(fmt.Sprintf("#/components/requestBodies/%s", name))
 		return rw
+	}
+}
+
+func WithRequestUpload(metadataProperty string, description string, metadata any) RouteConfigFunc {
+	t := reflect.TypeOf(metadata)
+	if metadataProperty != "" && metadata != nil && t.Kind() != reflect.Struct {
+		panic(fmt.Errorf("echopen: struct expected, received %s", t.Kind()))
+	}
+
+	return func(rw *RouteWrapper) *RouteWrapper {
+		required := []string{"file"}
+		properties := map[string]*v320.Ref[v320.Schema]{
+			"file": {
+				Value: &v320.Schema{
+					Type:   "string",
+					Format: "binary",
+				},
+			},
+		}
+		if metadataProperty != "" && metadata != nil {
+			metadataRef := rw.API.ToSchemaRef(metadata)
+			required = append(required, metadataProperty)
+			properties[metadataProperty] = metadataRef
+		}
+		fn := WithRequestBodySchemaDescription("multipart/form-data", description, &v320.Schema{
+			Type:       "object",
+			Required:   required,
+			Properties: properties,
+		})
+		return fn(rw)
 	}
 }
