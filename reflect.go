@@ -2,6 +2,7 @@ package echopen
 
 import (
 	"fmt"
+	"mime/multipart"
 	"reflect"
 	"strconv"
 	"strings"
@@ -117,6 +118,9 @@ func (w *APIWrapper) TypeToSchema(typ reflect.Type) *v320.Schema {
 		// Get schema for struct including contained fields (assume json)
 		if typ == reflect.TypeOf(time.Time{}) {
 			return &v320.Schema{Type: "string", Format: "date-time", SourceType: typ}
+		}
+		if typ == reflect.TypeOf(multipart.FileHeader{}) {
+			return &v320.Schema{Type: "string", Format: "binary", SourceType: typ}
 		}
 		return w.StructTypeToSchema(typ, "json")
 	case reflect.Pointer:

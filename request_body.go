@@ -110,33 +110,3 @@ func WithRequestBodyRef(name string) RouteConfigFunc {
 		return rw
 	}
 }
-
-func WithRequestUpload(metadataProperty string, description string, metadata any) RouteConfigFunc {
-	t := reflect.TypeOf(metadata)
-	if metadataProperty != "" && metadata != nil && t.Kind() != reflect.Struct {
-		panic(fmt.Errorf("echopen: struct expected, received %s", t.Kind()))
-	}
-
-	return func(rw *RouteWrapper) *RouteWrapper {
-		required := []string{"file"}
-		properties := map[string]*v320.Ref[v320.Schema]{
-			"file": {
-				Value: &v320.Schema{
-					Type:   "string",
-					Format: "binary",
-				},
-			},
-		}
-		if metadataProperty != "" && metadata != nil {
-			metadataRef := rw.API.ToSchemaRef(metadata)
-			required = append(required, metadataProperty)
-			properties[metadataProperty] = metadataRef
-		}
-		fn := WithRequestBodySchemaDescription("multipart/form-data", description, &v320.Schema{
-			Type:       "object",
-			Required:   required,
-			Properties: properties,
-		})
-		return fn(rw)
-	}
-}
