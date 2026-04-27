@@ -140,7 +140,18 @@ type Link struct {
 
 // 4.8.21 https://spec.openapis.org/oas/v3.2.0#header-object
 type Header struct {
-	TODO
+	Description     string `json:"description,omitempty" yaml:"description,omitempty"`
+	Required        bool   `json:"required,omitempty" yaml:"required,omitempty"`
+	Deprecated      bool   `json:"deprecated,omitempty" yaml:"deprecated,omitempty"`
+	AllowEmptyValue bool   `json:"allowEmptyValue,omitempty" yaml:"allowEmptyValue,omitempty"`
+
+	Style         string     `json:"style,omitempty" yaml:"style,omitempty"`
+	Explode       bool       `json:"explode,omitempty" yaml:"explode,omitempty"`
+	AllowReserved bool       `json:"allowReserved,omitempty" yaml:"allowReserved,omitempty"`
+	Schema        *Schema    `json:"schema,omitempty" yaml:"schema,omitempty"`
+	Examples      []*Example `json:"examples,omitempty" yaml:"examples,omitempty"`
+
+	Content map[string]*MediaTypeObject `json:"content,omitempty" yaml:"content,omitempty"`
 }
 
 // 4.8.22 https://spec.openapis.org/oas/v3.2.0#tag-object

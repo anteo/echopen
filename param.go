@@ -32,6 +32,16 @@ type CookieParameterConfig struct {
 	Schema      *v320.Schema
 }
 
+type QueryParameterConfig struct {
+	Name        string
+	Description string
+	Required    bool
+	Examples    []*v320.Example
+	Style       string
+	Explode     bool
+	Schema      *v320.Schema
+}
+
 func WithParameter(param *v320.Parameter) RouteConfigFunc {
 	return func(rw *RouteWrapper) *RouteWrapper {
 		rw.Operation.AddParameter(param)
@@ -70,6 +80,19 @@ func WithCookieParameterConfig(c *CookieParameterConfig) RouteConfigFunc {
 		Description: c.Description,
 		Required:    c.Required,
 		Schema:      c.Schema,
+	})
+}
+
+func WithQueryParameterConfig(c *QueryParameterConfig) RouteConfigFunc {
+	return WithParameter(&v320.Parameter{
+		Name:        c.Name,
+		In:          "query",
+		Description: c.Description,
+		Required:    c.Required,
+		Examples:    c.Examples,
+		Schema:      c.Schema,
+		Explode:     c.Explode,
+		Style:       c.Style,
 	})
 }
 
@@ -130,5 +153,27 @@ func WithCookieParameter(name string, description string, example interface{}) R
 		}
 
 		return WithCookieParameterConfig(cookieParam)(rw)
+	}
+}
+
+func WithQueryParameter(name string, description string, example interface{}) RouteConfigFunc {
+	return func(rw *RouteWrapper) *RouteWrapper {
+		queryParam := &QueryParameterConfig{
+			Name:        name,
+			Description: description,
+		}
+
+		if example != nil {
+			t := reflect.TypeOf(example)
+			zero := reflect.New(t).Elem().Interface()
+			queryParam.Schema = rw.API.TypeToSchema(t)
+			if example != zero {
+				queryParam.Examples = []*v320.Example{
+					{Value: example},
+				}
+			}
+		}
+
+		return WithQueryParameterConfig(queryParam)(rw)
 	}
 }

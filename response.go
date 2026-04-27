@@ -14,6 +14,16 @@ type ResponseStructConfig struct {
 	JSON        bool
 }
 
+type ResponseHeaderConfig struct {
+	Name        string
+	Description string
+	Required    bool
+	Examples    []*v320.Example
+	Style       string
+	Explode     bool
+	Schema      *v320.Schema
+}
+
 func WithResponse(code string, resp *v320.Response) RouteConfigFunc {
 	return func(rw *RouteWrapper) *RouteWrapper {
 		rw.Operation.AddResponse(code, resp)
@@ -100,4 +110,82 @@ func WithResponseFile(code string, description string, mime string) RouteConfigF
 
 		return rw
 	}
+}
+
+func WithResponseHeaderConfig(code string, cfg *ResponseHeaderConfig) RouteConfigFunc {
+	return func(rw *RouteWrapper) *RouteWrapper {
+		if rw.Operation.Responses == nil {
+			rw.Operation.Responses = map[string]*v320.Ref[v320.Response]{}
+		}
+
+		ref := rw.Operation.Responses[code]
+		if ref == nil {
+			ref = &v320.Ref[v320.Response]{Value: &v320.Response{Description: code}}
+			rw.Operation.Responses[code] = ref
+		}
+		if ref.Value == nil {
+			panic("echopen: cannot add response header to response ref")
+		}
+		if ref.Value.Headers == nil {
+			ref.Value.Headers = map[string]*v320.Ref[v320.Header]{}
+		}
+
+		if existing := ref.Value.Headers[cfg.Name]; existing != nil && existing.Value != nil {
+			// Merge with existing header declaration so repeated calls (e.g. Set-Cookie) do not overwrite each other.
+			if cfg.Description != "" {
+				existing.Value.Description = cfg.Description
+			}
+			if cfg.Schema != nil {
+				existing.Value.Schema = cfg.Schema
+			}
+			if len(cfg.Examples) > 0 {
+				existing.Value.Examples = append(existing.Value.Examples, cfg.Examples...)
+			}
+			existing.Value.Required = existing.Value.Required || cfg.Required
+			if cfg.Style != "" {
+				existing.Value.Style = cfg.Style
+			}
+			existing.Value.Explode = cfg.Explode
+			return rw
+		}
+
+		ref.Value.Headers[cfg.Name] = &v320.Ref[v320.Header]{
+			Value: &v320.Header{
+				Description: cfg.Description,
+				Required:    cfg.Required,
+				Examples:    cfg.Examples,
+				Schema:      cfg.Schema,
+				Explode:     cfg.Explode,
+				Style:       cfg.Style,
+			},
+		}
+
+		return rw
+	}
+}
+
+func WithResponseHeader(code string, name string, description string, example interface{}) RouteConfigFunc {
+	return func(rw *RouteWrapper) *RouteWrapper {
+		cfg := &ResponseHeaderConfig{
+			Name:        name,
+			Description: description,
+		}
+
+		if example != nil {
+			t := reflect.TypeOf(example)
+			zero := reflect.New(t).Elem().Interface()
+			cfg.Schema = rw.API.TypeToSchema(t)
+			if example != zero {
+				cfg.Examples = []*v320.Example{
+					{Value: example},
+				}
+			}
+		}
+
+		return WithResponseHeaderConfig(code, cfg)(rw)
+	}
+}
+
+func WithResponseCookie(code string, description string, example string) RouteConfigFunc {
+	return WithResponseHeader(code, "Set-Cookie", description, example)
 }
